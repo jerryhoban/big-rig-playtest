@@ -1,0 +1,2055 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Big Rig V4.0 — Drop & Hooks Playtest</title>
+<style>
+:root {
+  --bg:#0e1116; --panel:#171c24; --panel2:#202733; --line:#303a49;
+  --text:#f1f4f8; --muted:#9da8b8; --accent:#f2b84b; --good:#67d39b;
+  --danger:#ef6a6a; --blue:#65a9ff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,select{font:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:#252d39;color:var(--text);border-radius:10px;padding:10px 13px}
+button:hover{background:#303a49}
+button.primary{background:var(--accent);color:#16120a;border-color:var(--accent);font-weight:700}
+button.good{background:#245a46;border-color:#357f61}
+button.danger{background:#5c2929;border-color:#804040}
+button:disabled{opacity:.4;cursor:not-allowed}
+.app{min-height:100vh;display:flex;flex-direction:column}
+header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:18px;position:sticky;top:0;background:rgba(14,17,22,.96);z-index:10}
+.logo{font-size:24px;font-weight:900;letter-spacing:.08em}
+.subtitle{color:var(--muted);font-size:13px}
+.topstats{margin-left:auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.stat b{font-size:16px}
+.layout{display:grid;grid-template-columns:minmax(420px,1.5fr) minmax(360px,1fr);gap:12px;padding:12px;flex:1}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.panel h2{font-size:14px;margin:0;padding:11px 13px;border-bottom:1px solid var(--line);letter-spacing:.05em;text-transform:uppercase;color:#d9e0ea}
+.mapwrap{height:720px;min-height:650px;position:relative;background:#121a22}
+#map{width:100%;height:100%;display:block;min-height:620px;background:#182630;border:2px solid #405164}
+.map-edge{stroke:#566476;stroke-width:5;opacity:.85}
+.drive-edge{stroke:#f2b84b;stroke-width:12;opacity:.95;cursor:pointer;filter:drop-shadow(0 0 5px rgba(242,184,75,.5))}
+.map-city{fill:#f2b84b;stroke:#111820;stroke-width:3}
+.click-city{fill:#67d39b;stroke:#fff;stroke-width:3;cursor:pointer}
+.current-city{fill:#fff;stroke:#f2b84b;stroke-width:5}
+.map-city{cursor:default}
+.map-city{fill:#f2b84b;stroke:#111820;stroke-width:3}
+.highway-label{fill:#c7d2df;font-size:9px;font-weight:700;text-anchor:middle;paint-order:stroke;stroke:#182630;stroke-width:3px}.city-label{fill:#fff;font-size:14px;font-weight:700;paint-order:stroke;stroke:#0d1116;stroke-width:4px}
+.player-dot{stroke:#fff;stroke-width:2}
+.segment-dot{fill:#8c99a8;stroke:#121922;stroke-width:2}
+.segment-dot.active{fill:#f2b84b;stroke:#fff;stroke-width:2;cursor:pointer}
+.segment-dot.current-stop{fill:#fff;stroke:#f2b84b;stroke-width:3}
+
+.map-legend{position:absolute;left:12px;bottom:12px;background:rgba(23,28,36,.92);border:1px solid var(--line);padding:10px;border-radius:10px;font-size:12px;color:var(--muted)}
+.right{display:flex;flex-direction:column;gap:12px;min-width:0}
+.market{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:10px}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:10px;min-height:145px;display:flex;flex-direction:column;gap:5px}
+.card .route{font-weight:800}
+.card .meta{font-size:12px;color:var(--muted)}
+.card .reward{font-size:20px;color:var(--accent);font-weight:900}
+.card button{margin-top:auto}
+.tabs{display:flex;gap:6px;padding:10px;border-bottom:1px solid var(--line);overflow:auto}
+.tabs button{white-space:nowrap}
+.tabs button.active{background:#3a4555;border-color:#5a6a80}
+.content{padding:12px}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.player-list{display:flex;flex-direction:column;gap:7px}
+.player{padding:9px;border:1px solid var(--line);border-radius:9px;background:#1b222c}
+.player.current{border-color:var(--accent);box-shadow:0 0 0 1px rgba(242,184,75,.2) inset}
+.player .name{font-weight:800}
+.small{font-size:12px;color:var(--muted)}
+.actions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.actionblock{margin-top:10px}
+.notice{padding:10px;border-radius:9px;background:#222b37;color:#dbe4ef;margin:8px 0;font-size:13px}
+.booked{display:flex;flex-direction:column;gap:6px}
+.booked-item{padding:8px;background:#1e2631;border:1px solid var(--line);border-radius:8px}
+.badge{display:inline-block;padding:2px 7px;border-radius:999px;background:#2e3948;color:#cdd6e3;font-size:11px}
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:30;padding:16px}
+.modal{width:min(620px,100%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.modal h3{margin-top:0}
+.choicegrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+.footer{padding:8px 12px;color:#7f8a99;font-size:11px;text-align:center;border-top:1px solid var(--line)}
+@media(max-width:900px) {
+  .layout{grid-template-columns:1fr}
+  .mapwrap{height:55vh;min-height:420px}
+  .topstats{margin-left:0}
+  header{flex-wrap:wrap}
+}
+
+.interstate-shield{fill:#1e5da8;stroke:#fff;stroke-width:1.5}
+.interstate-num{fill:#fff;font-size:9px;font-weight:900;text-anchor:middle;dominant-baseline:middle;pointer-events:none}
+.truck-stop{fill:#2ecc71;stroke:#0b1016;stroke-width:2}
+.truck-stop-label{fill:#8ee2ae;font-size:9px;font-weight:700;paint-order:stroke;stroke:#111922;stroke-width:3px;pointer-events:none}
+.active-truck-ring{fill:none;stroke:#fff;stroke-width:3}
+.turn-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(7,11,16,.45);z-index:8;cursor:pointer}
+.turn-card{background:rgba(18,26,35,.96);border:2px solid #fff;border-radius:16px;padding:18px 28px;text-align:center;min-width:260px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.turn-card .who{font-size:26px;font-weight:950;letter-spacing:1px}
+.turn-card .where{font-size:13px;color:#cbd6e2;margin-top:6px}
+@keyframes truckPop{0%{transform:scale(1)}40%{transform:scale(1.9)}100%{transform:scale(1)}}
+.truck-pop{transform-box:fill-box;transform-origin:center;animation:truckPop 1.2s ease}
+
+
+.map-clock-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
+.clock-track{fill:none;stroke:#d5dde6;stroke-width:2;opacity:.75}
+.clock-tick{stroke:#d5dde6;stroke-width:1.5;opacity:.72}
+.clock-tick.major{stroke-width:3;opacity:1}
+.clock-label{fill:#dce4ed;font-size:10px;font-weight:800;text-anchor:middle;dominant-baseline:middle;paint-order:stroke;stroke:#101820;stroke-width:3px}
+.clock-player{stroke:#fff;stroke-width:2}
+.clock-player-text{fill:#fff;font-size:9px;font-weight:900;text-anchor:middle;dominant-baseline:middle;pointer-events:none}
+.clock-resting{fill:#f2b84b;font-size:8px;font-weight:900;text-anchor:middle;pointer-events:none}
+.map-controls{position:absolute;right:12px;top:12px;z-index:7;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:330px}
+.map-controls button{padding:8px 10px;min-width:42px;background:rgba(20,28,37,.94)}
+.mapwrap.zooming #map{cursor:grabbing}
+#map{touch-action:none;cursor:grab}
+.search-load{grid-column:1/-1}
+.search-list{display:flex;flex-direction:column;gap:7px;margin:10px 0;max-height:360px;overflow:auto}
+.search-row{display:flex;align-items:flex-start;gap:9px;background:#202833;border:1px solid #344252;border-radius:8px;padding:8px}
+.search-row input{margin-top:3px;transform:scale(1.2)}
+
+
+/* V1.0 layout refinements */
+.market{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.card{min-height:128px;padding:8px}
+.card .route{font-size:13px}
+.card .meta{font-size:11px}
+.card .reward{font-size:18px}
+.right{display:grid;grid-template-columns:minmax(0,1fr) 250px;grid-template-areas:"market players" "turn players";align-content:start}
+.right>.panel:nth-child(1){grid-area:market}
+.right>.panel:nth-child(2){grid-area:turn}
+.player-status-panel{grid-area:players;align-self:start;position:sticky;top:82px}
+.player-status-list{display:flex;flex-direction:column;gap:7px;padding:10px}
+.player-status{border:1px solid var(--line);border-left:5px solid;border-radius:9px;background:#1c2430;padding:9px}
+.player-status.active{box-shadow:0 0 0 2px rgba(255,255,255,.16) inset;background:#242e3c}
+.player-status .ps-name{font-weight:900}
+.player-status .ps-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;margin-top:5px;font-size:11px;color:var(--muted)}
+.player-status .ps-location{grid-column:1/-1;color:#dce5ef}
+.label-layer text{opacity:.67}
+.label-layer .label-active{opacity:1}
+.reachable-node{fill:#f2b84b;stroke:#fff;stroke-width:2;cursor:pointer}
+.reachable-city{fill:#67d39b;stroke:#fff;stroke-width:3;cursor:pointer}
+.reachable-truckstop{fill:#2ecc71;stroke:#fff;stroke-width:3;cursor:pointer}
+.route-node{fill:#8794a3;stroke:#17202a;stroke-width:1.5}
+@media(max-width:1200px){
+  .right{grid-template-columns:minmax(0,1fr) 220px}
+  .market{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .right{display:flex}
+  .player-status-panel{position:static}
+}
+
+
+/* V1.1 lower-right quadrant layout */
+.turn-loads-grid{display:grid;grid-template-columns:170px minmax(0,1fr);gap:10px;align-items:start}
+.action-stack{display:flex;flex-direction:column;gap:7px}
+.action-stack button{width:100%;text-align:left;justify-content:flex-start}
+.current-loads-panel{background:#1a222c;border:1px solid var(--line);border-radius:10px;padding:9px;min-height:205px}
+.current-loads-panel h3{margin:0 0 7px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#dce5ef}
+.current-load-card{background:#202a36;border:1px solid #3b4959;border-radius:8px;padding:8px;margin-bottom:7px}
+.current-load-card.active-load{border-color:#f2b84b}
+.current-load-card .load-title{font-size:12px;font-weight:900}
+.current-load-card .load-meta{font-size:10px;color:var(--muted);margin-top:3px}
+.player-status:not(.active){opacity:.46;filter:saturate(.6)}
+.player-status.active{opacity:1}
+@media(max-width:1100px){
+  .turn-loads-grid{grid-template-columns:150px minmax(0,1fr)}
+}
+@media(max-width:700px){
+  .turn-loads-grid{grid-template-columns:1fr}
+  .action-stack{display:grid;grid-template-columns:1fr 1fr}
+  .action-stack .search-action{grid-column:1/-1}
+}
+
+
+#mapLabels text{opacity:.66}
+#mapLabels .active-label{opacity:1}
+#mapLabels .city-fixed{fill:#fff;font-size:12px;font-weight:800;paint-order:stroke;stroke:#101820;stroke-width:3px}
+#mapLabels .truckstop-fixed{fill:#79d99c;font-size:9px;font-weight:800;paint-order:stroke;stroke:#101820;stroke-width:3px}
+#mapLabels .player-fixed{font-size:10px;font-weight:900;paint-order:stroke;stroke:#101820;stroke-width:3px}
+#mapLabels .shield-shape{fill:#1e5da8;stroke:#fff;stroke-width:1.3}
+#mapLabels .shield-text{fill:#fff;font-size:8px;font-weight:900;text-anchor:middle;dominant-baseline:middle;opacity:.75}
+
+
+/* V1.2 map interaction fixes */
+#mapLabels{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}
+#mapLabels text{opacity:.62}
+#mapLabels .active-label{opacity:1}
+.reachable-node{fill:rgba(242,184,75,.45);stroke:rgba(255,255,255,.75);stroke-width:1.5;cursor:pointer}
+.reachable-city{fill:rgba(103,211,155,.62);stroke:#fff;stroke-width:2;cursor:pointer}
+.reachable-truckstop{fill:rgba(46,204,113,.72);stroke:#fff;stroke-width:2;cursor:pointer}
+.route-preview-line{stroke:#69b7ff;stroke-width:9;stroke-linecap:round;opacity:.72;pointer-events:none}
+.route-preview-dim{opacity:.28}
+.preview-pickup{fill:#56d89b;stroke:#fff;stroke-width:3}
+.preview-delivery{fill:#ffb454;stroke:#fff;stroke-width:3}
+.load-map-btn{margin-top:6px;padding:5px 8px;font-size:11px;min-width:auto}
+#mapLabels .shield-shape{fill:#1e5da8;stroke:#fff;stroke-width:1.2}
+#mapLabels .shield-text{fill:#fff;font-size:8px;font-weight:900;text-anchor:middle;dominant-baseline:middle}
+
+
+/* V1.3 map-layer refactor */
+.map-html-labels{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+.map-html-label{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;opacity:.66;font-size:12px;font-weight:800;color:#fff;text-shadow:0 0 3px #0b1016,0 0 3px #0b1016}
+.map-html-label.active{opacity:1}
+.map-html-label.truckstop{font-size:10px;color:#79d99c}
+.map-html-label.player{font-size:11px}
+.map-html-label.shield span{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;padding:0 4px;background:#1e5da8;color:#fff;border:1px solid #fff;border-radius:7px 7px 10px 10px;font-size:10px;font-weight:900}
+.drive-hit-layer{position:absolute;inset:0;z-index:7;pointer-events:none}
+.drive-hit-layer svg{width:100%;height:100%;display:block;pointer-events:none}
+.drive-hit{fill:rgba(255,255,255,.001);stroke:rgba(255,255,255,.001);pointer-events:all;cursor:pointer}
+.drive-hit-ring{fill:none;stroke:#fff;stroke-width:2;opacity:.75;pointer-events:none}
+#mapLabels{display:none!important}
+
+
+/* V1.4 playtest-first map architecture */
+.world-overlay{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+.screen-object{position:absolute;transform:translate(-50%,-50%);pointer-events:none}
+.screen-node{width:7px;height:7px;border-radius:50%;background:rgba(220,228,236,.48);border:1px solid rgba(20,28,37,.75)}
+.screen-node.truckstop{background:rgba(66,190,105,.78);border-color:#dff6e6}
+.screen-city{width:13px;height:13px;border-radius:50%;background:#e9eef4;border:2px solid #253342}
+.screen-truck{width:18px;height:12px;border-radius:3px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.55)}
+.screen-node.reachable,.screen-city.reachable{box-shadow:0 0 0 4px rgba(242,184,75,.22);border-color:rgba(255,255,255,.9)}
+.screen-node.reachable{background:rgba(242,184,75,.55)}
+.screen-node.truckstop.reachable{background:rgba(66,190,105,.8)}
+.screen-hit{position:absolute;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;pointer-events:auto;cursor:pointer;background:transparent}
+.screen-hit:active{box-shadow:0 0 0 3px rgba(255,255,255,.8)}
+#driveHitLayer{display:none!important}
+#htmlLabels{z-index:8}
+.map-clock-overlay{z-index:9!important}
+.map-controls{z-index:10!important}
+.player-board-mini{margin-top:10px;background:#171f29;border:1px solid var(--line);border-radius:10px;padding:9px}
+.player-board-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+.rig-chain{display:grid;grid-template-columns:1fr 18px 1fr 18px 1.2fr;align-items:stretch;gap:4px}
+.rig-arrow{display:flex;align-items:center;justify-content:center;color:#7d8997;font-weight:900}
+.rig-slot{min-height:84px;border:1px solid #526172;border-radius:8px;background:#eef2f5;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px}
+.rig-slot .rig-icon{font-size:28px;line-height:1}
+.rig-slot .rig-label{font-size:9px;font-weight:900;margin-top:5px;letter-spacing:.05em}
+.rig-slot.load-empty{background:#252e39;color:#8895a4;border-style:dashed}
+.rig-slot.load-full{background:#e9f1f7}
+.module-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:7px}
+.module-disabled{opacity:.25;filter:grayscale(1);border:1px solid #526172;border-radius:7px;padding:6px;text-align:center;font-size:10px}
+.load-state-pickup .pickup-city{font-weight:950;color:#fff}
+.load-state-active .delivery-city{font-weight:950;color:#fff}
+.load-state-tag{font-size:9px;font-weight:900;letter-spacing:.07em;color:#9eacba;margin-bottom:3px}
+
+
+/* SVG geometry that is represented in screen-space */
+#map .route-node,#map .city,#map .truck-stop,#map .active-truck-ring{opacity:0;pointer-events:none}
+#map circle[onclick]{opacity:0;pointer-events:none}
+
+
+/* V1.5 authoritative map registration */
+.world-overlay{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+.map-html-labels{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}
+.screen-object{position:absolute;transform:translate(-50%,-50%);pointer-events:none}
+.screen-node{width:7px;height:7px;border-radius:50%;background:rgba(220,228,236,.48);border:1px solid rgba(20,28,37,.75)}
+.screen-node.truckstop{background:rgba(66,190,105,.82);border-color:#e6fff0}
+.screen-city{width:13px;height:13px;border-radius:50%;background:#e9eef4;border:2px solid #253342}
+.screen-truck{width:18px;height:12px;border-radius:3px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.55)}
+.screen-node.reachable,.screen-city.reachable{box-shadow:0 0 0 4px rgba(242,184,75,.20);border-color:rgba(255,255,255,.92)}
+.screen-node.reachable{background:rgba(242,184,75,.50)}
+.screen-node.truckstop.reachable{background:rgba(66,190,105,.84)}
+.screen-hit{position:absolute;transform:translate(-50%,-50%);width:32px;height:32px;border-radius:50%;pointer-events:auto;cursor:pointer;background:transparent}
+.map-html-label{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;opacity:.64;font-size:12px;font-weight:800;color:#fff;text-shadow:0 0 3px #0b1016,0 0 3px #0b1016}
+.map-html-label.active{opacity:1}.map-html-label.truckstop{font-size:10px;color:#79d99c}.map-html-label.player{font-size:11px}
+.map-html-label.shield span{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;padding:0 4px;background:#1e5da8;color:#fff;border:1px solid #fff;border-radius:7px 7px 10px 10px;font-size:10px;font-weight:900}
+#mapLabels,#driveHitLayer{display:none!important}
+
+
+/* ================= V2 ================= */
+.top-left-stack{display:flex;flex-direction:column;gap:4px}
+.rules-link{font-size:11px;color:#c8d3df;text-decoration:underline;cursor:pointer;width:max-content;background:none;border:0;padding:0}
+.v2-main-right{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:12px;align-items:start}
+.v2-action-area{display:grid;grid-template-columns:175px minmax(0,1fr);gap:10px}
+.v2-action-stack{display:flex;flex-direction:column;gap:7px}
+.v2-action-stack button{width:100%;text-align:left}
+.undo-btn{background:#3c4653;border-color:#6a7888}
+.undo-btn:disabled{opacity:.35}
+.round-panel{background:#151d27;border:1px solid #344151;border-radius:12px;padding:10px 12px;margin-bottom:10px;text-align:center}
+.round-panel .round-label{font-size:11px;color:#94a2b2;text-transform:uppercase;letter-spacing:.08em}
+.round-panel .round-value{font-size:24px;font-weight:950;color:#f0b43d}
+.equipment-board{background:#171f29;border:1px solid #344151;border-radius:10px;padding:9px;margin-bottom:10px}
+.equipment-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+.equipment-chain{display:grid;grid-template-columns:1fr 18px 1.5fr;gap:5px;align-items:stretch}
+.eq-slot{min-height:92px;border:1px solid #526172;border-radius:8px;background:#eef2f5;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px;text-align:center}
+.eq-icon{font-size:28px}.eq-label{font-size:9px;font-weight:900;margin-top:5px;letter-spacing:.06em}
+.trailer-load{margin-top:6px;font-size:10px;line-height:1.25}
+.trailer-empty{color:#7f8a96}.module-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:7px}
+.module-disabled{opacity:.25;filter:grayscale(1);border:1px solid #526172;border-radius:7px;padding:6px;text-align:center;font-size:10px}
+.market-tag{display:inline-block;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:999px;background:#2a3441;color:#cdd7e2;margin-bottom:3px}
+.player-status:not(.active){opacity:.42;filter:saturate(.55)}
+.player-status.active{opacity:1;box-shadow:0 0 0 2px rgba(255,255,255,.16) inset}
+.completed-stat{font-weight:900}
+.tractor-trailer-marker{position:absolute;transform:translate(-50%,-50%);width:27px;height:14px;pointer-events:none}
+.tractor-trailer-marker .cab{position:absolute;left:0;top:3px;width:9px;height:8px;border:2px solid #fff;border-radius:2px}
+.tractor-trailer-marker .trl{position:absolute;left:10px;top:1px;width:16px;height:10px;border:2px solid #fff;border-radius:2px}
+.tractor-trailer-marker .wheel{position:absolute;width:4px;height:4px;background:#111;border:1px solid #fff;border-radius:50%;top:11px}
+.tractor-trailer-marker .w1{left:3px}.tractor-trailer-marker .w2{left:18px}
+.turn-overlay{background:rgba(5,9,13,.70)!important}
+.turn-card{min-width:320px;padding:22px 30px!important}
+.turn-card .who{font-size:30px!important}
+.turn-card .where{font-size:14px!important;margin-top:7px}
+.bottom-clock-wrap{position:absolute;left:20px;right:20px;bottom:10px;height:56px;z-index:9;pointer-events:none}
+.bottom-clock-track{position:absolute;left:0;right:0;top:24px;height:4px;background:#dce4ec;border-radius:3px;opacity:.85}
+.bottom-clock-tick{position:absolute;top:17px;width:1px;height:18px;background:#dce4ec;opacity:.75}
+.bottom-clock-tick.major{width:2px;height:24px;top:14px;opacity:1}
+.bottom-clock-label{position:absolute;top:36px;transform:translateX(-50%);font-size:9px;font-weight:800;color:#dce4ec;text-shadow:0 0 3px #101820}
+.bottom-clock-player{position:absolute;top:14px;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;border:2px solid #fff;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;color:#fff}
+.select-all-row{display:flex;gap:7px;margin:8px 0}
+#clockOverlay{display:none!important}
+@media(max-width:1000px){
+  .v2-main-right{grid-template-columns:1fr}
+  .v2-action-area{grid-template-columns:1fr}
+}
+
+
+/* V2.1 setup + left status */
+.main{grid-template-columns:250px minmax(560px,1.45fr) minmax(390px,1fr)}
+.left-status{display:flex;flex-direction:column;gap:10px;min-width:0}
+.left-status .player-status-panel{position:static;top:auto}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.setup-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.start-assignments{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.start-assignment{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#202a36;border:1px solid #3b4959;border-radius:8px;padding:8px 10px}
+.rep-progress{font-weight:900}
+@media(max-width:1100px){.main{grid-template-columns:220px minmax(500px,1fr)}.right{grid-column:1/-1}}
+@media(max-width:800px){.main{grid-template-columns:1fr}.left-status,.right{grid-column:auto}}
+
+
+/* V2.2 requested UI changes */
+.right{display:flex;flex-direction:column;gap:12px}
+.player-board-panel{order:1}.market-panel{order:2}
+.tractor-trailer-marker{width:44px!important;height:24px!important;z-index:8}
+.tractor-trailer-marker .cab{left:0!important;top:5px!important;width:15px!important;height:13px!important}
+.tractor-trailer-marker .trl{left:16px!important;top:2px!important;width:27px!important;height:16px!important}
+.tractor-trailer-marker .wheel{width:6px!important;height:6px!important;top:18px!important}
+.tractor-trailer-marker .w1{left:5px!important}.tractor-trailer-marker .w2{left:31px!important}
+.player-marker-label{position:absolute;transform:translate(-50%,-50%);font-size:13px;font-weight:950;color:#fff;text-shadow:0 1px 4px #000,0 0 3px #000;z-index:9;pointer-events:none}
+.market-tag.below-route{display:block;margin:4px 0 0;width:max-content}
+
+
+/* V2.3 corrected board layout */
+.layout{
+  display:grid;
+  grid-template-columns:250px minmax(560px,1.45fr) minmax(390px,1fr);
+  gap:12px;
+  align-items:start;
+}
+.left-status{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-width:0;
+}
+.goal-panel{
+  background:#151d27;
+  border:1px solid #344151;
+  border-radius:12px;
+  padding:12px;
+}
+.goal-label{
+  font-size:10px;
+  color:#94a2b2;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.goal-value{
+  margin-top:4px;
+  font-size:24px;
+  font-weight:950;
+  color:#f0b43d;
+}
+.left-status .player-status-panel{
+  position:static!important;
+  top:auto!important;
+  align-self:stretch;
+}
+.left-status .player-status-list{max-height:none}
+.right{display:flex;flex-direction:column;gap:12px}
+.player-board-panel{order:1}
+.market-panel{order:2}
+.player-status:not(.active){opacity:.42;filter:saturate(.55)}
+.player-status.active{opacity:1}
+@media(max-width:1150px){
+  .layout{grid-template-columns:220px minmax(520px,1fr)}
+  .right{grid-column:1/-1}
+}
+@media(max-width:820px){
+  .layout{grid-template-columns:1fr}
+  .left-status,.right{grid-column:auto}
+}
+
+
+/* V2.4 end game */
+.game-over-overlay{display:none;position:absolute;inset:0;background:rgba(4,7,10,.86);z-index:100;align-items:center;justify-content:center;padding:24px}
+.game-over-card{width:min(620px,94%);background:#17212b;border:2px solid #d6ad42;border-radius:16px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.45)}
+.gold-rig{font-size:52px;filter:sepia(1) saturate(4) hue-rotate(355deg) brightness(1.25)}
+.standings{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.standing-row{display:grid;grid-template-columns:42px 1fr auto auto;gap:10px;align-items:center;background:#202a36;border:1px solid #3b4959;border-radius:9px;padding:10px}
+.standing-row.winner{border-color:#d6ad42;background:#2a261c}
+.standing-place{font-size:20px;font-weight:950}
+
+/* V3 regional freight market */
+.right .market-panel{display:none!important}.freight-market-wide{margin:12px}
+.regional-market-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.region-board{background:#151d27;border:1px solid #344151;border-radius:11px;padding:9px}
+.region-board h3{margin:0 0 7px;font-size:13px;color:#f0b43d;text-transform:uppercase}
+.region-cards{display:flex;flex-direction:column;gap:7px}.region-cards .load-card{width:auto}
+.region-count{float:right;font-size:10px;color:#91a0b0}@media(max-width:1200px){.regional-market-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.regional-market-grid{grid-template-columns:1fr}}
+
+/* V3.1 persistent compact freight board */
+.freight-market-wide{margin:12px 12px 18px;overflow:visible}
+.freight-market-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.search-mode-controls{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.search-mode-banner{font-size:11px;color:#dbe5ef}
+.regional-market-grid{overflow:visible}
+.region-board{overflow:visible}
+.region-cards{overflow:visible}
+.compact-load{
+  position:relative;
+  background:#202a36;
+  border:1px solid #3b4959;
+  border-radius:8px;
+  min-width:0;
+  cursor:pointer;
+  user-select:none;
+}
+.compact-load.selected{box-shadow:0 0 0 2px #f0b43d inset;border-color:#f0b43d}
+.compact-load-main{
+  padding:8px 9px;
+  font-size:12px;
+  font-weight:900;
+  line-height:1.25;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.compact-load-main .lane{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.compact-load-main .search-check{font-size:17px;flex:0 0 auto}
+.compact-load-detail{
+  display:none;
+  position:absolute;
+  z-index:50;
+  left:0;
+  bottom:calc(100% + 6px);
+  width:260px;
+  background:#17212b;
+  border:1px solid #566578;
+  border-radius:10px;
+  padding:10px;
+  box-shadow:0 10px 28px rgba(0,0,0,.45);
+  cursor:default;
+}
+.compact-load.expanded .compact-load-detail{display:block}
+.compact-load-detail .detail-route{font-size:13px;font-weight:950;margin-bottom:5px}
+.compact-load-detail .detail-meta{font-size:11px;color:#aebbc8;line-height:1.45}
+.compact-load-detail .detail-actions{display:flex;gap:6px;margin-top:8px}
+.compact-load-detail button{min-height:34px}
+@media (hover:hover) and (pointer:fine){
+  .compact-load:hover .compact-load-detail{display:block}
+}
+@media(max-width:760px){
+  .compact-load-detail{width:min(260px,82vw)}
+}
+
+
+/* V3.2 map/status refinements */
+.version-detail-panel{position:static!important}
+.version-detail-text{padding:10px 12px;font-size:11px;line-height:1.55;color:#aebbc8}
+.version-detail-text b{color:#e5edf5}
+.bottom-clock-icon{
+  position:absolute;
+  left:-3px;
+  top:9px;
+  transform:translateX(-100%);
+  font-size:18px;
+  filter:drop-shadow(0 1px 2px #000);
+}
+.turn-reminder{
+  margin-top:10px;
+  font-size:20px;
+  font-weight:950;
+  color:#fff;
+}
+
+
+/* V3.3 dashboard and freight quick-info */
+.freight-inline{display:flex;align-items:center;gap:6px;width:100%;min-width:0}
+.freight-inline .lane{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.quick-stat{font-size:10px;font-weight:900;white-space:nowrap;color:#c6d0da}
+.route-mini{padding:4px 7px!important;min-height:26px!important;font-size:10px!important;white-space:nowrap}
+.driver-dashboard-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.driver-dashboard-title{font-size:15px;font-weight:950}
+.driver-dashboard-player{font-size:12px;font-weight:900}
+.action-btn.rest-warning{background:#d9a928!important;color:#171717!important;border-color:#f1cb55!important}
+.action-btn.rest-critical{background:#b73535!important;color:white!important;border-color:#e05b5b!important}
+.action-btn:disabled{opacity:.32!important;filter:grayscale(.6);cursor:not-allowed!important}
+
+
+/* V3.4 region awareness + booking cap + turn handoff */
+.region-overlay{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.region-zone{position:absolute;opacity:.10;border:2px solid rgba(255,255,255,.12);border-radius:18px;pointer-events:none}
+.region-zone-label{position:absolute;font-size:11px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;opacity:.52;pointer-events:none;text-shadow:0 1px 2px #000}
+.region-northwest{background:#7c9fb8}
+.region-southwest{background:#b88a7c}
+.region-north-central{background:#8e9f74}
+.region-south-central{background:#b89b66}
+.region-northeast{background:#8c7cae}
+.region-southeast{background:#7cae99}
+.region-board.region-northwest{border-top:4px solid #7c9fb8}
+.region-board.region-southwest{border-top:4px solid #b88a7c}
+.region-board.region-north-central{border-top:4px solid #8e9f74}
+.region-board.region-south-central{border-top:4px solid #b89b66}
+.region-board.region-northeast{border-top:4px solid #8c7cae}
+.region-board.region-southeast{border-top:4px solid #7cae99}
+.region-toggle.active{box-shadow:0 0 0 2px rgba(255,255,255,.18) inset}
+.book-limit{font-size:10px;color:#aebbc8;font-weight:800}
+.book-limit.full{color:#f0b43d}
+.turn-overlay{z-index:120!important}
+.turn-card{animation:turnPop .22s ease-out}
+@keyframes turnPop{from{transform:scale(.92);opacity:.35}to{transform:scale(1);opacity:1}}
+
+
+/* V4.0 — Drop & Hooks */
+.map-html-label.city-region{
+  padding:3px 6px;border-radius:6px;opacity:.82;text-shadow:0 1px 2px #000;
+  border:1px solid rgba(255,255,255,.12)
+}
+.city-region.region-northwest{background:rgba(76,121,145,.72)}
+.city-region.region-north-central{background:rgba(112,132,76,.72)}
+.city-region.region-northeast{background:rgba(112,91,145,.72)}
+.city-region.region-southwest{background:rgba(153,96,78,.72)}
+.city-region.region-south-central{background:rgba(157,125,63,.72)}
+.city-region.region-southeast{background:rgba(67,132,104,.72)}
+.dh-wide{grid-column:1/-1;margin-top:10px}
+.dh-lanes{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
+.dh-card{border:1px solid #516171;background:#15222c;border-radius:9px;padding:8px}
+.dh-card .dh-title{font-weight:950;font-size:12px}
+.dh-card .dh-meta{font-size:10px;color:#aebbc8;margin-top:4px}
+.dh-card.available{box-shadow:0 0 0 2px rgba(91,210,139,.22) inset}
+.dh-badge{display:inline-block;padding:2px 5px;border-radius:5px;background:#263847;font-size:9px;font-weight:950}
+.dh-action{background:#2f6f53!important;border-color:#4d9b76!important}
+.trailer-map-icon{position:absolute;transform:translate(-50%,-50%);font-size:14px;font-weight:950;
+  background:#101a22;border:1px solid #8ea0b0;border-radius:5px;padding:2px 4px;color:#fff;z-index:10}
+.personal-trailer-map{position:absolute;transform:translate(-50%,-50%);font-size:10px;font-weight:950;
+  border:2px solid currentColor;background:#101a22;border-radius:5px;padding:2px 4px;z-index:11}
+.eq-slot.disconnected{opacity:.48}
+.eq-status{font-size:10px;font-weight:900;margin-top:4px}
+.dwell-die{font-size:42px;text-align:center;margin:8px 0}
+.module-chip{display:inline-block;padding:3px 6px;border-radius:6px;background:#244235;color:#aee8c8;font-size:10px;font-weight:900}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="top-left-stack"><div class="logo">BIG RIG</div><button class="rules-link" onclick="showRules()">Rules</button><div class="subtitle">V4.0 Drop & Hooks Playtest — Logistics, Time & Reputation</div></div>
+  <div class="topstats" id="topstats"></div>
+</header>
+
+<div class="layout">
+
+  <section class="left-status">
+    <section class="panel player-status-panel">
+      <h2>Players</h2>
+      <div class="player-status-list" id="playerStatusList"></div>
+    </section>
+    <section class="panel version-detail-panel">
+      <h2>Version Detail</h2>
+      <div class="version-detail-text">
+        <b>Core Map</b><br>
+        Major Interstate network only<br>
+        Gray node = 1 hour / ~50 miles<br>
+        Green node = named truck stop / safe stop<br>
+        Pinch/wheel to zoom · drag to pan<br>
+        Standard speed: 50 MPH
+      </div>
+    </section>
+  </section>
+
+  <section class="panel mapwrap">
+    <svg id="map" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="mapLabels" class="map-clock-overlay" viewBox="0 0 900 600" preserveAspectRatio="none" style="z-index:4;pointer-events:none"></svg>
+<div id="worldOverlay" class="world-overlay"></div>
+    <div id="htmlLabels" class="map-html-labels"></div>
+<div id="driveHitLayer" class="drive-hit-layer"><svg id="driveHitSvg" viewBox="0 0 900 600" preserveAspectRatio="none"></svg></div>
+    <svg id="clockOverlay" class="map-clock-overlay" viewBox="0 0 900 600" preserveAspectRatio="none"></svg>
+<div id="bottomClock" class="bottom-clock-wrap"></div>
+    <div class="map-controls">
+      <button onclick="zoomMap(1.25)" title="Zoom in">＋</button>
+      <button onclick="zoomMap(0.8)" title="Zoom out">−</button>
+      <button onclick="fitMap()" title="Fit full map">Fit Map</button>
+      <button onclick="centerOnCurrentPlayer()" title="Center on current player">Center Player</button>
+    </div>
+  </section>
+
+  <section class="right">
+    <div class="panel player-board-panel">
+      <div class="content" id="tabcontent"></div>
+    </div>
+
+    <div class="panel market-panel" style="display:none">
+      <h2>Freight Market</h2>
+      <div class="market" id="market"></div>
+    </div>
+  </section>
+</div>
+<div class="footer">Prototype data imported from the Big Rig workbook. Reputation values are provisional and use the workbook's existing “Total Proposed” field.</div>
+</div>
+
+<section class="panel freight-market-wide">
+  <div class="freight-market-head">
+    <h2>Freight Market</h2>
+    <div id="searchModeControls" class="search-mode-controls"></div>
+  </div>
+  <div id="regionalMarket" class="regional-market-grid"></div>
+</section>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+const DATA = {"edges":[{"a":"Seattle","b":"Portland","highway":"I-5","miles":174,"segments":3},{"a":"Portland","b":"Sacramento","highway":"I-5","miles":580,"segments":12},{"a":"Sacramento","b":"Los Angeles","highway":"I-5","miles":385,"segments":8},{"a":"Los Angeles","b":"San Diego","highway":"I-5","miles":120,"segments":2},{"a":"Sacramento","b":"San Francisco","highway":"I-80","miles":87,"segments":2},{"a":"San Francisco","b":"San Jose","highway":"I-280","miles":48,"segments":1},{"a":"San Jose","b":"Los Angeles","highway":"I-5","miles":340,"segments":7},{"a":"Sacramento","b":"Salt Lake City","highway":"I-80","miles":650,"segments":13},{"a":"Salt Lake City","b":"Denver","highway":"I-70","miles":520,"segments":10},{"a":"Denver","b":"Kansas City","highway":"I-70","miles":605,"segments":12},{"a":"Kansas City","b":"St. Louis","highway":"I-70","miles":250,"segments":5},{"a":"St. Louis","b":"Indianapolis","highway":"I-70","miles":245,"segments":5},{"a":"Indianapolis","b":"Columbus","highway":"I-70","miles":175,"segments":4},{"a":"Columbus","b":"Philadelphia","highway":"I-70/I-76","miles":470,"segments":9},{"a":"Philadelphia","b":"New York","highway":"I-95","miles":95,"segments":2},{"a":"New York","b":"Boston","highway":"I-95","miles":215,"segments":4},{"a":"Baltimore","b":"Philadelphia","highway":"I-95","miles":100,"segments":2},{"a":"Washington DC","b":"Baltimore","highway":"I-95","miles":40,"segments":1},{"a":"Charlotte","b":"Washington DC","highway":"I-85/I-95","miles":400,"segments":8},{"a":"Atlanta","b":"Charlotte","highway":"I-85","miles":245,"segments":5},{"a":"Montgomery","b":"Atlanta","highway":"I-85","miles":160,"segments":3},{"a":"Jacksonville","b":"Atlanta","highway":"I-75/I-10","miles":345,"segments":7},{"a":"Jacksonville","b":"Charlotte","highway":"I-95/I-26","miles":390,"segments":8},{"a":"Houston","b":"Jacksonville","highway":"I-10","miles":870,"segments":17},{"a":"San Antonio","b":"Houston","highway":"I-10","miles":200,"segments":4},{"a":"El Paso","b":"San Antonio","highway":"I-10","miles":550,"segments":11},{"a":"Tucson","b":"El Paso","highway":"I-10","miles":320,"segments":6},{"a":"Phoenix","b":"Tucson","highway":"I-10","miles":115,"segments":2},{"a":"Los Angeles","b":"Phoenix","highway":"I-10","miles":370,"segments":7},{"a":"San Diego","b":"Las Vegas","highway":"I-15","miles":330,"segments":7},{"a":"Los Angeles","b":"Las Vegas","highway":"I-15","miles":270,"segments":5},{"a":"Las Vegas","b":"Salt Lake City","highway":"I-15","miles":420,"segments":8},{"a":"Phoenix","b":"Las Vegas","highway":"I-11/I-215","miles":300,"segments":6},{"a":"Dallas","b":"Austin","highway":"I-35","miles":195,"segments":4},{"a":"Austin","b":"San Antonio","highway":"I-35","miles":80,"segments":2},{"a":"Oklahoma City","b":"Dallas","highway":"I-35","miles":205,"segments":4},{"a":"Kansas City","b":"Oklahoma City","highway":"I-35","miles":350,"segments":7},{"a":"Minneapolis","b":"Kansas City","highway":"I-35","miles":440,"segments":9},{"a":"Fort Worth","b":"Dallas","highway":"I-30","miles":35,"segments":1},{"a":"Dallas","b":"Houston","highway":"I-45","miles":240,"segments":5},{"a":"Dallas","b":"El Paso","highway":"I-20/I-10","miles":635,"segments":13},{"a":"Dallas","b":"Atlanta","highway":"I-20","miles":780,"segments":16},{"a":"Memphis","b":"Nashville","highway":"I-40","miles":210,"segments":4},{"a":"Nashville","b":"Charlotte","highway":"I-40","miles":410,"segments":8},{"a":"Oklahoma City","b":"Memphis","highway":"I-40","miles":470,"segments":9},{"a":"Albuquerque","b":"Oklahoma City","highway":"I-40","miles":540,"segments":11},{"a":"Phoenix","b":"Albuquerque","highway":"I-40","miles":465,"segments":9},{"a":"Denver","b":"Albuquerque","highway":"I-25","miles":450,"segments":9},{"a":"Albuquerque","b":"El Paso","highway":"I-25","miles":270,"segments":5},{"a":"St. Louis","b":"Memphis","highway":"I-55","miles":285,"segments":6},{"a":"Memphis","b":"New Orleans","highway":"I-55","miles":395,"segments":8},{"a":"Nashville","b":"Louisville","highway":"I-65","miles":175,"segments":4},{"a":"Louisville","b":"Indianapolis","highway":"I-65","miles":115,"segments":2},{"a":"Indianapolis","b":"Chicago","highway":"I-65","miles":185,"segments":4},{"a":"Chicago","b":"Milwaukee","highway":"I-94","miles":90,"segments":2},{"a":"Milwaukee","b":"Minneapolis","highway":"I-94","miles":335,"segments":7},{"a":"Minneapolis","b":"Billings","highway":"I-94","miles":840,"segments":17},{"a":"Billings","b":"Seattle","highway":"I-90","miles":820,"segments":16},{"a":"Chicago","b":"Detroit","highway":"I-94","miles":285,"segments":6},{"a":"Detroit","b":"Columbus","highway":"I-75","miles":200,"segments":4},{"a":"Louisville","b":"Atlanta","highway":"I-75","miles":420,"segments":8},{"a":"Boise","b":"Salt Lake City","highway":"I-84","miles":340,"segments":7},{"a":"Boise","b":"Portland","highway":"I-84","miles":430,"segments":9},{"a":"Omaha","b":"Denver","highway":"I-80","miles":540,"segments":11},{"a":"Omaha","b":"Chicago","highway":"I-80","miles":470,"segments":9},{"a":"Fresno","b":"Los Angeles","highway":"I-5","miles":220,"segments":4},{"a":"Fresno","b":"Sacramento","highway":"I-5","miles":170,"segments":3},{"a":"Mesa","b":"Phoenix","highway":"I-10","miles":20,"segments":1},{"a":"Omaha","b":"Kansas City","highway":"I-29/I-35","miles":185,"segments":4},{"a":"Salt Lake City","b":"Billings","highway":"I-15","miles":545,"segments":11}],"routes":[{"a":"Seattle","b":"Portland","highway":"I-5","miles":174,"segments":3},{"a":"Portland","b":"Sacramento","highway":"I-5","miles":580,"segments":12},{"a":"Sacramento","b":"Los Angeles","highway":"I-5","miles":385,"segments":8},{"a":"Los Angeles","b":"San Diego","highway":"I-5","miles":120,"segments":2},{"a":"Sacramento","b":"San Francisco","highway":"I-80","miles":87,"segments":2},{"a":"San Francisco","b":"San Jose","highway":"I-280","miles":48,"segments":1},{"a":"San Jose","b":"Los Angeles","highway":"I-5","miles":340,"segments":7},{"a":"Sacramento","b":"Salt Lake City","highway":"I-80","miles":650,"segments":13},{"a":"Salt Lake City","b":"Denver","highway":"I-70","miles":520,"segments":10},{"a":"Denver","b":"Kansas City","highway":"I-70","miles":605,"segments":12},{"a":"Kansas City","b":"St. Louis","highway":"I-70","miles":250,"segments":5},{"a":"St. Louis","b":"Indianapolis","highway":"I-70","miles":245,"segments":5},{"a":"Indianapolis","b":"Columbus","highway":"I-70","miles":175,"segments":4},{"a":"Columbus","b":"Philadelphia","highway":"I-70/I-76","miles":470,"segments":9},{"a":"Philadelphia","b":"New York","highway":"I-95","miles":95,"segments":2},{"a":"New York","b":"Boston","highway":"I-95","miles":215,"segments":4},{"a":"Baltimore","b":"Philadelphia","highway":"I-95","miles":100,"segments":2},{"a":"Washington DC","b":"Baltimore","highway":"I-95","miles":40,"segments":1},{"a":"Charlotte","b":"Washington DC","highway":"I-85/I-95","miles":400,"segments":8},{"a":"Atlanta","b":"Charlotte","highway":"I-85","miles":245,"segments":5},{"a":"Montgomery","b":"Atlanta","highway":"I-85","miles":160,"segments":3},{"a":"Jacksonville","b":"Atlanta","highway":"I-75/I-10","miles":345,"segments":7},{"a":"Jacksonville","b":"Charlotte","highway":"I-95/I-26","miles":390,"segments":8},{"a":"Houston","b":"Jacksonville","highway":"I-10","miles":870,"segments":17},{"a":"San Antonio","b":"Houston","highway":"I-10","miles":200,"segments":4},{"a":"El Paso","b":"San Antonio","highway":"I-10","miles":550,"segments":11},{"a":"Tucson","b":"El Paso","highway":"I-10","miles":320,"segments":6},{"a":"Phoenix","b":"Tucson","highway":"I-10","miles":115,"segments":2},{"a":"Los Angeles","b":"Phoenix","highway":"I-10","miles":370,"segments":7},{"a":"San Diego","b":"Las Vegas","highway":"I-15","miles":330,"segments":7},{"a":"Los Angeles","b":"Las Vegas","highway":"I-15","miles":270,"segments":5},{"a":"Las Vegas","b":"Salt Lake City","highway":"I-15","miles":420,"segments":8},{"a":"Phoenix","b":"Las Vegas","highway":"I-11/I-215","miles":300,"segments":6},{"a":"Dallas","b":"Austin","highway":"I-35","miles":195,"segments":4},{"a":"Austin","b":"San Antonio","highway":"I-35","miles":80,"segments":2},{"a":"Oklahoma City","b":"Dallas","highway":"I-35","miles":205,"segments":4},{"a":"Kansas City","b":"Oklahoma City","highway":"I-35","miles":350,"segments":7},{"a":"Minneapolis","b":"Kansas City","highway":"I-35","miles":440,"segments":9},{"a":"Fort Worth","b":"Dallas","highway":"I-30","miles":35,"segments":1},{"a":"Dallas","b":"Houston","highway":"I-45","miles":240,"segments":5},{"a":"Dallas","b":"El Paso","highway":"I-20/I-10","miles":635,"segments":13},{"a":"Dallas","b":"Atlanta","highway":"I-20","miles":780,"segments":16},{"a":"Memphis","b":"Nashville","highway":"I-40","miles":210,"segments":4},{"a":"Nashville","b":"Charlotte","highway":"I-40","miles":410,"segments":8},{"a":"Oklahoma City","b":"Memphis","highway":"I-40","miles":470,"segments":9},{"a":"Albuquerque","b":"Oklahoma City","highway":"I-40","miles":540,"segments":11},{"a":"Phoenix","b":"Albuquerque","highway":"I-40","miles":465,"segments":9},{"a":"Denver","b":"Albuquerque","highway":"I-25","miles":450,"segments":9},{"a":"Albuquerque","b":"El Paso","highway":"I-25","miles":270,"segments":5},{"a":"St. Louis","b":"Memphis","highway":"I-55","miles":285,"segments":6},{"a":"Memphis","b":"New Orleans","highway":"I-55","miles":395,"segments":8},{"a":"Nashville","b":"Louisville","highway":"I-65","miles":175,"segments":4},{"a":"Louisville","b":"Indianapolis","highway":"I-65","miles":115,"segments":2},{"a":"Indianapolis","b":"Chicago","highway":"I-65","miles":185,"segments":4},{"a":"Chicago","b":"Milwaukee","highway":"I-94","miles":90,"segments":2},{"a":"Milwaukee","b":"Minneapolis","highway":"I-94","miles":335,"segments":7},{"a":"Minneapolis","b":"Billings","highway":"I-94","miles":840,"segments":17},{"a":"Billings","b":"Seattle","highway":"I-90","miles":820,"segments":16},{"a":"Chicago","b":"Detroit","highway":"I-94","miles":285,"segments":6},{"a":"Detroit","b":"Columbus","highway":"I-75","miles":200,"segments":4},{"a":"Louisville","b":"Atlanta","highway":"I-75","miles":420,"segments":8},{"a":"Boise","b":"Salt Lake City","highway":"I-84","miles":340,"segments":7},{"a":"Boise","b":"Portland","highway":"I-84","miles":430,"segments":9},{"a":"Omaha","b":"Denver","highway":"I-80","miles":540,"segments":11},{"a":"Omaha","b":"Chicago","highway":"I-80","miles":470,"segments":9},{"a":"Fresno","b":"Los Angeles","highway":"I-5","miles":220,"segments":4},{"a":"Fresno","b":"Sacramento","highway":"I-5","miles":170,"segments":3},{"a":"Mesa","b":"Phoenix","highway":"I-10","miles":20,"segments":1},{"a":"Omaha","b":"Kansas City","highway":"I-29/I-35","miles":185,"segments":4},{"a":"Salt Lake City","b":"Billings","highway":"I-15","miles":545,"segments":11}],"loads":[{"id":"CORE001","origin":"San Francisco","destination":"Seattle","commodity":"Consumer Goods","miles":850,"segments":17,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southwest"},{"id":"CORE002","origin":"San Francisco","destination":"Los Angeles","commodity":"Food Products","miles":400,"segments":8,"equipment":"Dry Van","type":"Core","reward":3,"market":"Southwest"},{"id":"CORE003","origin":"San Francisco","destination":"Billings","commodity":"Building Materials","miles":1650,"segments":33,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE004","origin":"San Francisco","destination":"San Antonio","commodity":"Machinery","miles":1700,"segments":34,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE005","origin":"Seattle","destination":"Portland","commodity":"Food Products","miles":150,"segments":3,"equipment":"Dry Van","type":"Core","reward":2,"market":"Northwest"},{"id":"CORE006","origin":"Seattle","destination":"San Diego","commodity":"Building Materials","miles":1200,"segments":24,"equipment":"Dry Van","type":"Core","reward":5,"market":"Northwest"},{"id":"CORE007","origin":"Seattle","destination":"Albuquerque","commodity":"Machinery","miles":1900,"segments":38,"equipment":"Dry Van","type":"Core","reward":7,"market":"Northwest"},{"id":"CORE008","origin":"Seattle","destination":"Dallas","commodity":"Paper Products","miles":2500,"segments":50,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northwest"},{"id":"CORE009","origin":"Portland","destination":"San Jose","commodity":"Building Materials","miles":750,"segments":15,"equipment":"Dry Van","type":"Core","reward":4,"market":"Northwest"},{"id":"CORE010","origin":"Portland","destination":"Las Vegas","commodity":"Machinery","miles":1200,"segments":24,"equipment":"Dry Van","type":"Core","reward":5,"market":"Northwest"},{"id":"CORE011","origin":"Portland","destination":"Denver","commodity":"Paper Products","miles":1300,"segments":26,"equipment":"Dry Van","type":"Core","reward":6,"market":"Northwest"},{"id":"CORE012","origin":"Portland","destination":"Kansas City","commodity":"Auto Parts","miles":1900,"segments":38,"equipment":"Dry Van","type":"Core","reward":7,"market":"Northwest"},{"id":"CORE013","origin":"San Jose","destination":"Sacramento","commodity":"Machinery","miles":150,"segments":3,"equipment":"Dry Van","type":"Core","reward":2,"market":"Southwest"},{"id":"CORE014","origin":"San Jose","destination":"Boise","commodity":"Paper Products","miles":1150,"segments":23,"equipment":"Dry Van","type":"Core","reward":5,"market":"Southwest"},{"id":"CORE015","origin":"San Jose","destination":"El Paso","commodity":"Auto Parts","miles":1100,"segments":22,"equipment":"Dry Van","type":"Core","reward":5,"market":"Southwest"},{"id":"CORE016","origin":"San Jose","destination":"Minneapolis","commodity":"Household Goods","miles":2350,"segments":47,"equipment":"Dry Van","type":"Core","reward":9,"market":"Southwest"},{"id":"CORE017","origin":"Sacramento","destination":"Fresno","commodity":"Paper Products","miles":150,"segments":3,"equipment":"Dry Van","type":"Core","reward":2,"market":"Southwest"},{"id":"CORE018","origin":"Sacramento","destination":"Phoenix","commodity":"Auto Parts","miles":700,"segments":14,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southwest"},{"id":"CORE019","origin":"Sacramento","destination":"Fort Worth","commodity":"Household Goods","miles":1800,"segments":36,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE020","origin":"Sacramento","destination":"Houston","commodity":"Packaging","miles":1850,"segments":37,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE021","origin":"Fresno","destination":"Los Angeles","commodity":"Auto Parts","miles":200,"segments":4,"equipment":"Dry Van","type":"Core","reward":3,"market":"Southwest"},{"id":"CORE022","origin":"Fresno","destination":"Tucson","commodity":"Household Goods","miles":650,"segments":13,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southwest"},{"id":"CORE023","origin":"Fresno","destination":"Omaha","commodity":"Packaging","miles":1850,"segments":37,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE024","origin":"Fresno","destination":"Milwaukee","commodity":"Consumer Goods","miles":2400,"segments":48,"equipment":"Dry Van","type":"Core","reward":9,"market":"Southwest"},{"id":"CORE025","origin":"Los Angeles","destination":"San Diego","commodity":"Household Goods","miles":100,"segments":2,"equipment":"Dry Van","type":"Core","reward":2,"market":"Southwest"},{"id":"CORE026","origin":"Los Angeles","destination":"Mesa","commodity":"Packaging","miles":400,"segments":8,"equipment":"Dry Van","type":"Core","reward":3,"market":"Southwest"},{"id":"CORE027","origin":"Los Angeles","destination":"Oklahoma City","commodity":"Consumer Goods","miles":1350,"segments":27,"equipment":"Dry Van","type":"Core","reward":6,"market":"Southwest"},{"id":"CORE028","origin":"Los Angeles","destination":"St. Louis","commodity":"Food Products","miles":1950,"segments":39,"equipment":"Dry Van","type":"Core","reward":8,"market":"Southwest"},{"id":"CORE029","origin":"San Diego","destination":"Las Vegas","commodity":"Packaging","miles":350,"segments":7,"equipment":"Dry Van","type":"Core","reward":3,"market":"Southwest"},{"id":"CORE030","origin":"San Diego","destination":"Salt Lake City","commodity":"Consumer Goods","miles":750,"segments":15,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southwest"},{"id":"CORE031","origin":"San Diego","destination":"Austin","commodity":"Food Products","miles":1500,"segments":30,"equipment":"Dry Van","type":"Core","reward":6,"market":"Southwest"},{"id":"CORE032","origin":"San Diego","destination":"Chicago","commodity":"Building Materials","miles":2250,"segments":45,"equipment":"Dry Van","type":"Core","reward":8,"market":"Southwest"},{"id":"CORE033","origin":"Las Vegas","destination":"Boise","commodity":"Consumer Goods","miles":750,"segments":15,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southwest"},{"id":"CORE034","origin":"Las Vegas","destination":"Billings","commodity":"Food Products","miles":2150,"segments":43,"equipment":"Dry Van","type":"Core","reward":8,"market":"Southwest"},{"id":"CORE035","origin":"Las Vegas","destination":"San Antonio","commodity":"Building Materials","miles":1250,"segments":25,"equipment":"Dry Van","type":"Core","reward":6,"market":"Southwest"},{"id":"CORE036","origin":"Las Vegas","destination":"Memphis","commodity":"Machinery","miles":1750,"segments":35,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE037","origin":"Boise","destination":"Phoenix","commodity":"Food Products","miles":1050,"segments":21,"equipment":"Dry Van","type":"Core","reward":5,"market":"Northwest"},{"id":"CORE038","origin":"Boise","destination":"Albuquerque","commodity":"Building Materials","miles":1300,"segments":26,"equipment":"Dry Van","type":"Core","reward":6,"market":"Northwest"},{"id":"CORE039","origin":"Boise","destination":"Dallas","commodity":"Machinery","miles":2000,"segments":40,"equipment":"Dry Van","type":"Core","reward":8,"market":"Northwest"},{"id":"CORE040","origin":"Boise","destination":"Indianapolis","commodity":"Paper Products","miles":1950,"segments":39,"equipment":"Dry Van","type":"Core","reward":8,"market":"Northwest"},{"id":"CORE041","origin":"Phoenix","destination":"Tucson","commodity":"Building Materials","miles":100,"segments":2,"equipment":"Dry Van","type":"Core","reward":2,"market":"Southwest"},{"id":"CORE042","origin":"Phoenix","destination":"Denver","commodity":"Machinery","miles":900,"segments":18,"equipment":"Dry Van","type":"Core","reward":5,"market":"Southwest"},{"id":"CORE043","origin":"Phoenix","destination":"Kansas City","commodity":"Paper Products","miles":1350,"segments":27,"equipment":"Dry Van","type":"Core","reward":6,"market":"Southwest"},{"id":"CORE044","origin":"Phoenix","destination":"Louisville","commodity":"Auto Parts","miles":1850,"segments":37,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE045","origin":"Tucson","destination":"Mesa","commodity":"Machinery","miles":150,"segments":3,"equipment":"Dry Van","type":"Core","reward":2,"market":"Southwest"},{"id":"CORE046","origin":"Tucson","destination":"El Paso","commodity":"Paper Products","miles":300,"segments":6,"equipment":"Dry Van","type":"Core","reward":3,"market":"Southwest"},{"id":"CORE047","origin":"Tucson","destination":"Minneapolis","commodity":"Auto Parts","miles":1900,"segments":38,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE048","origin":"Tucson","destination":"Nashville","commodity":"Household Goods","miles":1750,"segments":35,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE049","origin":"Mesa","destination":"Salt Lake City","commodity":"Paper Products","miles":750,"segments":15,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southwest"},{"id":"CORE050","origin":"Mesa","destination":"Fort Worth","commodity":"Auto Parts","miles":1150,"segments":23,"equipment":"Dry Van","type":"Core","reward":5,"market":"Southwest"},{"id":"CORE051","origin":"Mesa","destination":"Houston","commodity":"Household Goods","miles":1200,"segments":24,"equipment":"Dry Van","type":"Core","reward":5,"market":"Southwest"},{"id":"CORE052","origin":"Mesa","destination":"Detroit","commodity":"Packaging","miles":2250,"segments":45,"equipment":"Dry Van","type":"Core","reward":8,"market":"Southwest"},{"id":"CORE053","origin":"Salt Lake City","destination":"Billings","commodity":"Auto Parts","miles":1750,"segments":35,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE054","origin":"Salt Lake City","destination":"Omaha","commodity":"Household Goods","miles":1050,"segments":21,"equipment":"Dry Van","type":"Core","reward":5,"market":"Southwest"},{"id":"CORE055","origin":"Salt Lake City","destination":"Milwaukee","commodity":"Packaging","miles":1600,"segments":32,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE056","origin":"Salt Lake City","destination":"Atlanta","commodity":"Consumer Goods","miles":2100,"segments":42,"equipment":"Dry Van","type":"Core","reward":8,"market":"Southwest"},{"id":"CORE057","origin":"Billings","destination":"Albuquerque","commodity":"Household Goods","miles":2200,"segments":44,"equipment":"Dry Van","type":"Core","reward":8,"market":"Northwest"},{"id":"CORE058","origin":"Billings","destination":"Oklahoma City","commodity":"Packaging","miles":1650,"segments":33,"equipment":"Dry Van","type":"Core","reward":7,"market":"Northwest"},{"id":"CORE059","origin":"Billings","destination":"St. Louis","commodity":"Consumer Goods","miles":1550,"segments":31,"equipment":"Dry Van","type":"Core","reward":6,"market":"Northwest"},{"id":"CORE060","origin":"Billings","destination":"Columbus","commodity":"Food Products","miles":1700,"segments":34,"equipment":"Dry Van","type":"Core","reward":7,"market":"Northwest"},{"id":"CORE061","origin":"Albuquerque","destination":"Denver","commodity":"Packaging","miles":450,"segments":9,"equipment":"Dry Van","type":"Core","reward":3,"market":"Southwest"},{"id":"CORE062","origin":"Albuquerque","destination":"Austin","commodity":"Consumer Goods","miles":900,"segments":18,"equipment":"Dry Van","type":"Core","reward":5,"market":"Southwest"},{"id":"CORE063","origin":"Albuquerque","destination":"Chicago","commodity":"Food Products","miles":1450,"segments":29,"equipment":"Dry Van","type":"Core","reward":6,"market":"Southwest"},{"id":"CORE064","origin":"Albuquerque","destination":"Charlotte","commodity":"Building Materials","miles":1600,"segments":32,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southwest"},{"id":"CORE065","origin":"Denver","destination":"El Paso","commodity":"Consumer Goods","miles":700,"segments":14,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southwest"},{"id":"CORE066","origin":"Denver","destination":"San Antonio","commodity":"Food Products","miles":1250,"segments":25,"equipment":"Dry Van","type":"Core","reward":6,"market":"Southwest"},{"id":"CORE067","origin":"Denver","destination":"Memphis","commodity":"Building Materials","miles":1150,"segments":23,"equipment":"Dry Van","type":"Core","reward":5,"market":"Southwest"},{"id":"CORE068","origin":"Denver","destination":"Jacksonville","commodity":"Machinery","miles":1950,"segments":39,"equipment":"Dry Van","type":"Core","reward":8,"market":"Southwest"},{"id":"CORE069","origin":"El Paso","destination":"Fort Worth","commodity":"Food Products","miles":700,"segments":14,"equipment":"Dry Van","type":"Core","reward":4,"market":"South Central"},{"id":"CORE070","origin":"El Paso","destination":"Dallas","commodity":"Building Materials","miles":650,"segments":13,"equipment":"Dry Van","type":"Core","reward":4,"market":"South Central"},{"id":"CORE071","origin":"El Paso","destination":"Indianapolis","commodity":"Machinery","miles":1650,"segments":33,"equipment":"Dry Van","type":"Core","reward":7,"market":"South Central"},{"id":"CORE072","origin":"El Paso","destination":"Washington DC","commodity":"Paper Products","miles":2100,"segments":42,"equipment":"Dry Van","type":"Core","reward":8,"market":"South Central"},{"id":"CORE073","origin":"Fort Worth","destination":"Omaha","commodity":"Building Materials","miles":1750,"segments":35,"equipment":"Dry Van","type":"Core","reward":7,"market":"South Central"},{"id":"CORE074","origin":"Fort Worth","destination":"Kansas City","commodity":"Machinery","miles":600,"segments":12,"equipment":"Dry Van","type":"Core","reward":4,"market":"South Central"},{"id":"CORE075","origin":"Fort Worth","destination":"Louisville","commodity":"Paper Products","miles":1100,"segments":22,"equipment":"Dry Van","type":"Core","reward":5,"market":"South Central"},{"id":"CORE076","origin":"Fort Worth","destination":"Baltimore","commodity":"Auto Parts","miles":1550,"segments":31,"equipment":"Dry Van","type":"Core","reward":6,"market":"South Central"},{"id":"CORE077","origin":"Omaha","destination":"Oklahoma City","commodity":"Machinery","miles":1500,"segments":30,"equipment":"Dry Van","type":"Core","reward":6,"market":"North Central"},{"id":"CORE078","origin":"Omaha","destination":"Minneapolis","commodity":"Paper Products","miles":900,"segments":18,"equipment":"Dry Van","type":"Core","reward":5,"market":"North Central"},{"id":"CORE079","origin":"Omaha","destination":"Nashville","commodity":"Auto Parts","miles":950,"segments":19,"equipment":"Dry Van","type":"Core","reward":5,"market":"North Central"},{"id":"CORE080","origin":"Omaha","destination":"Philadelphia","commodity":"Household Goods","miles":1300,"segments":26,"equipment":"Dry Van","type":"Core","reward":6,"market":"North Central"},{"id":"CORE081","origin":"Oklahoma City","destination":"Austin","commodity":"Paper Products","miles":400,"segments":8,"equipment":"Dry Van","type":"Core","reward":3,"market":"South Central"},{"id":"CORE082","origin":"Oklahoma City","destination":"Houston","commodity":"Auto Parts","miles":450,"segments":9,"equipment":"Dry Van","type":"Core","reward":3,"market":"South Central"},{"id":"CORE083","origin":"Oklahoma City","destination":"Detroit","commodity":"Household Goods","miles":1250,"segments":25,"equipment":"Dry Van","type":"Core","reward":6,"market":"South Central"},{"id":"CORE084","origin":"Oklahoma City","destination":"New York","commodity":"Packaging","miles":1600,"segments":32,"equipment":"Dry Van","type":"Core","reward":7,"market":"South Central"},{"id":"CORE085","origin":"Austin","destination":"San Antonio","commodity":"Auto Parts","miles":100,"segments":2,"equipment":"Dry Van","type":"Core","reward":2,"market":"South Central"},{"id":"CORE086","origin":"Austin","destination":"Milwaukee","commodity":"Household Goods","miles":1550,"segments":31,"equipment":"Dry Van","type":"Core","reward":6,"market":"South Central"},{"id":"CORE087","origin":"Austin","destination":"Atlanta","commodity":"Packaging","miles":1000,"segments":20,"equipment":"Dry Van","type":"Core","reward":5,"market":"South Central"},{"id":"CORE088","origin":"Austin","destination":"Boston","commodity":"Consumer Goods","miles":2100,"segments":42,"equipment":"Dry Van","type":"Core","reward":8,"market":"South Central"},{"id":"CORE089","origin":"San Antonio","destination":"Dallas","commodity":"Household Goods","miles":300,"segments":6,"equipment":"Dry Van","type":"Core","reward":3,"market":"South Central"},{"id":"CORE090","origin":"San Antonio","destination":"St. Louis","commodity":"Packaging","miles":1100,"segments":22,"equipment":"Dry Van","type":"Core","reward":5,"market":"South Central"},{"id":"CORE091","origin":"San Antonio","destination":"Columbus","commodity":"Consumer Goods","miles":1550,"segments":31,"equipment":"Dry Van","type":"Core","reward":6,"market":"South Central"},{"id":"CORE092","origin":"San Antonio","destination":"San Francisco","commodity":"Food Products","miles":1700,"segments":34,"equipment":"Dry Van","type":"Core","reward":7,"market":"South Central"},{"id":"CORE093","origin":"Dallas","destination":"Kansas City","commodity":"Packaging","miles":550,"segments":11,"equipment":"Dry Van","type":"Core","reward":4,"market":"South Central"},{"id":"CORE094","origin":"Dallas","destination":"Chicago","commodity":"Consumer Goods","miles":1250,"segments":25,"equipment":"Dry Van","type":"Core","reward":6,"market":"South Central"},{"id":"CORE095","origin":"Dallas","destination":"Charlotte","commodity":"Food Products","miles":1050,"segments":21,"equipment":"Dry Van","type":"Core","reward":5,"market":"South Central"},{"id":"CORE096","origin":"Dallas","destination":"Seattle","commodity":"Building Materials","miles":2500,"segments":50,"equipment":"Dry Van","type":"Core","reward":9,"market":"South Central"},{"id":"CORE097","origin":"Kansas City","destination":"Minneapolis","commodity":"Consumer Goods","miles":450,"segments":9,"equipment":"Dry Van","type":"Core","reward":3,"market":"North Central"},{"id":"CORE098","origin":"Kansas City","destination":"Memphis","commodity":"Food Products","miles":550,"segments":11,"equipment":"Dry Van","type":"Core","reward":4,"market":"North Central"},{"id":"CORE099","origin":"Kansas City","destination":"Jacksonville","commodity":"Building Materials","miles":1350,"segments":27,"equipment":"Dry Van","type":"Core","reward":6,"market":"North Central"},{"id":"CORE100","origin":"Kansas City","destination":"Portland","commodity":"Machinery","miles":1900,"segments":38,"equipment":"Dry Van","type":"Core","reward":7,"market":"North Central"},{"id":"CORE101","origin":"Minneapolis","destination":"Houston","commodity":"Food Products","miles":1250,"segments":25,"equipment":"Dry Van","type":"Core","reward":6,"market":"North Central"},{"id":"CORE102","origin":"Minneapolis","destination":"Indianapolis","commodity":"Building Materials","miles":650,"segments":13,"equipment":"Dry Van","type":"Core","reward":4,"market":"North Central"},{"id":"CORE103","origin":"Minneapolis","destination":"Washington DC","commodity":"Machinery","miles":1450,"segments":29,"equipment":"Dry Van","type":"Core","reward":6,"market":"North Central"},{"id":"CORE104","origin":"Minneapolis","destination":"San Jose","commodity":"Paper Products","miles":2350,"segments":47,"equipment":"Dry Van","type":"Core","reward":9,"market":"North Central"},{"id":"CORE105","origin":"Houston","destination":"Milwaukee","commodity":"Building Materials","miles":1600,"segments":32,"equipment":"Dry Van","type":"Core","reward":7,"market":"South Central"},{"id":"CORE106","origin":"Houston","destination":"Louisville","commodity":"Machinery","miles":1300,"segments":26,"equipment":"Dry Van","type":"Core","reward":6,"market":"South Central"},{"id":"CORE107","origin":"Houston","destination":"Baltimore","commodity":"Paper Products","miles":1700,"segments":34,"equipment":"Dry Van","type":"Core","reward":7,"market":"South Central"},{"id":"CORE108","origin":"Houston","destination":"Sacramento","commodity":"Auto Parts","miles":1850,"segments":37,"equipment":"Dry Van","type":"Core","reward":7,"market":"South Central"},{"id":"CORE109","origin":"Milwaukee","destination":"St. Louis","commodity":"Machinery","miles":550,"segments":11,"equipment":"Dry Van","type":"Core","reward":4,"market":"North Central"},{"id":"CORE110","origin":"Milwaukee","destination":"Nashville","commodity":"Paper Products","miles":600,"segments":12,"equipment":"Dry Van","type":"Core","reward":4,"market":"North Central"},{"id":"CORE111","origin":"Milwaukee","destination":"Philadelphia","commodity":"Auto Parts","miles":950,"segments":19,"equipment":"Dry Van","type":"Core","reward":5,"market":"North Central"},{"id":"CORE112","origin":"Milwaukee","destination":"Fresno","commodity":"Household Goods","miles":2400,"segments":48,"equipment":"Dry Van","type":"Core","reward":9,"market":"North Central"},{"id":"CORE113","origin":"St. Louis","destination":"Chicago","commodity":"Paper Products","miles":450,"segments":9,"equipment":"Dry Van","type":"Core","reward":3,"market":"North Central"},{"id":"CORE114","origin":"St. Louis","destination":"Detroit","commodity":"Auto Parts","miles":650,"segments":13,"equipment":"Dry Van","type":"Core","reward":4,"market":"North Central"},{"id":"CORE115","origin":"St. Louis","destination":"New York","commodity":"Household Goods","miles":1000,"segments":20,"equipment":"Dry Van","type":"Core","reward":5,"market":"North Central"},{"id":"CORE116","origin":"St. Louis","destination":"Los Angeles","commodity":"Packaging","miles":1950,"segments":39,"equipment":"Dry Van","type":"Core","reward":8,"market":"North Central"},{"id":"CORE117","origin":"Chicago","destination":"Memphis","commodity":"Auto Parts","miles":700,"segments":14,"equipment":"Dry Van","type":"Core","reward":4,"market":"North Central"},{"id":"CORE118","origin":"Chicago","destination":"Atlanta","commodity":"Household Goods","miles":700,"segments":14,"equipment":"Dry Van","type":"Core","reward":4,"market":"North Central"},{"id":"CORE119","origin":"Chicago","destination":"Boston","commodity":"Packaging","miles":1150,"segments":23,"equipment":"Dry Van","type":"Core","reward":5,"market":"North Central"},{"id":"CORE120","origin":"Chicago","destination":"San Diego","commodity":"Consumer Goods","miles":2250,"segments":45,"equipment":"Dry Van","type":"Core","reward":8,"market":"North Central"},{"id":"CORE121","origin":"Memphis","destination":"Indianapolis","commodity":"Household Goods","miles":500,"segments":10,"equipment":"Dry Van","type":"Core","reward":3,"market":"South Central"},{"id":"CORE122","origin":"Memphis","destination":"Columbus","commodity":"Packaging","miles":700,"segments":14,"equipment":"Dry Van","type":"Core","reward":4,"market":"South Central"},{"id":"CORE123","origin":"Memphis","destination":"San Francisco","commodity":"Consumer Goods","miles":2200,"segments":44,"equipment":"Dry Van","type":"Core","reward":8,"market":"South Central"},{"id":"CORE124","origin":"Memphis","destination":"Las Vegas","commodity":"Food Products","miles":1750,"segments":35,"equipment":"Dry Van","type":"Core","reward":7,"market":"South Central"},{"id":"CORE125","origin":"Indianapolis","destination":"Louisville","commodity":"Packaging","miles":100,"segments":2,"equipment":"Dry Van","type":"Core","reward":2,"market":"North Central"},{"id":"CORE126","origin":"Indianapolis","destination":"Charlotte","commodity":"Consumer Goods","miles":700,"segments":14,"equipment":"Dry Van","type":"Core","reward":4,"market":"North Central"},{"id":"CORE127","origin":"Indianapolis","destination":"Seattle","commodity":"Food Products","miles":2300,"segments":46,"equipment":"Dry Van","type":"Core","reward":9,"market":"North Central"},{"id":"CORE128","origin":"Indianapolis","destination":"Boise","commodity":"Building Materials","miles":1950,"segments":39,"equipment":"Dry Van","type":"Core","reward":8,"market":"North Central"},{"id":"CORE129","origin":"Louisville","destination":"Nashville","commodity":"Consumer Goods","miles":200,"segments":4,"equipment":"Dry Van","type":"Core","reward":3,"market":"Northeast"},{"id":"CORE130","origin":"Louisville","destination":"Jacksonville","commodity":"Food Products","miles":750,"segments":15,"equipment":"Dry Van","type":"Core","reward":4,"market":"Northeast"},{"id":"CORE131","origin":"Louisville","destination":"Portland","commodity":"Building Materials","miles":2500,"segments":50,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE132","origin":"Louisville","destination":"Phoenix","commodity":"Machinery","miles":1850,"segments":37,"equipment":"Dry Van","type":"Core","reward":7,"market":"Northeast"},{"id":"CORE133","origin":"Nashville","destination":"Detroit","commodity":"Food Products","miles":700,"segments":14,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southeast"},{"id":"CORE134","origin":"Nashville","destination":"Washington DC","commodity":"Building Materials","miles":800,"segments":16,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southeast"},{"id":"CORE135","origin":"Nashville","destination":"San Jose","commodity":"Machinery","miles":2350,"segments":47,"equipment":"Dry Van","type":"Core","reward":9,"market":"Southeast"},{"id":"CORE136","origin":"Nashville","destination":"Tucson","commodity":"Paper Products","miles":1750,"segments":35,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southeast"},{"id":"CORE137","origin":"Detroit","destination":"Atlanta","commodity":"Building Materials","miles":900,"segments":18,"equipment":"Dry Van","type":"Core","reward":5,"market":"North Central"},{"id":"CORE138","origin":"Detroit","destination":"Baltimore","commodity":"Machinery","miles":750,"segments":15,"equipment":"Dry Van","type":"Core","reward":4,"market":"North Central"},{"id":"CORE139","origin":"Detroit","destination":"Sacramento","commodity":"Paper Products","miles":2450,"segments":49,"equipment":"Dry Van","type":"Core","reward":9,"market":"North Central"},{"id":"CORE140","origin":"Detroit","destination":"Mesa","commodity":"Auto Parts","miles":2250,"segments":45,"equipment":"Dry Van","type":"Core","reward":8,"market":"North Central"},{"id":"CORE141","origin":"Atlanta","destination":"Columbus","commodity":"Machinery","miles":700,"segments":14,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southeast"},{"id":"CORE142","origin":"Atlanta","destination":"Philadelphia","commodity":"Paper Products","miles":800,"segments":16,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southeast"},{"id":"CORE143","origin":"Atlanta","destination":"Fresno","commodity":"Auto Parts","miles":2400,"segments":48,"equipment":"Dry Van","type":"Core","reward":9,"market":"Southeast"},{"id":"CORE144","origin":"Atlanta","destination":"Salt Lake City","commodity":"Household Goods","miles":2100,"segments":42,"equipment":"Dry Van","type":"Core","reward":8,"market":"Southeast"},{"id":"CORE145","origin":"Columbus","destination":"Charlotte","commodity":"Paper Products","miles":900,"segments":18,"equipment":"Dry Van","type":"Core","reward":5,"market":"North Central"},{"id":"CORE146","origin":"Columbus","destination":"New York","commodity":"Auto Parts","miles":550,"segments":11,"equipment":"Dry Van","type":"Core","reward":4,"market":"North Central"},{"id":"CORE147","origin":"Columbus","destination":"Los Angeles","commodity":"Household Goods","miles":2400,"segments":48,"equipment":"Dry Van","type":"Core","reward":9,"market":"North Central"},{"id":"CORE148","origin":"Columbus","destination":"Billings","commodity":"Packaging","miles":1700,"segments":34,"equipment":"Dry Van","type":"Core","reward":7,"market":"North Central"},{"id":"CORE149","origin":"Charlotte","destination":"Jacksonville","commodity":"Auto Parts","miles":400,"segments":8,"equipment":"Dry Van","type":"Core","reward":3,"market":"Southeast"},{"id":"CORE150","origin":"Charlotte","destination":"Boston","commodity":"Household Goods","miles":850,"segments":17,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southeast"},{"id":"CORE151","origin":"Charlotte","destination":"San Diego","commodity":"Packaging","miles":2500,"segments":50,"equipment":"Dry Van","type":"Core","reward":9,"market":"Southeast"},{"id":"CORE152","origin":"Charlotte","destination":"Albuquerque","commodity":"Consumer Goods","miles":1600,"segments":32,"equipment":"Dry Van","type":"Core","reward":7,"market":"Southeast"},{"id":"CORE153","origin":"Jacksonville","destination":"Washington DC","commodity":"Household Goods","miles":800,"segments":16,"equipment":"Dry Van","type":"Core","reward":4,"market":"Southeast"},{"id":"CORE154","origin":"Jacksonville","destination":"San Francisco","commodity":"Packaging","miles":2750,"segments":55,"equipment":"Dry Van","type":"Core","reward":9,"market":"Southeast"},{"id":"CORE155","origin":"Jacksonville","destination":"Las Vegas","commodity":"Consumer Goods","miles":2300,"segments":46,"equipment":"Dry Van","type":"Core","reward":9,"market":"Southeast"},{"id":"CORE156","origin":"Jacksonville","destination":"Denver","commodity":"Food Products","miles":1950,"segments":39,"equipment":"Dry Van","type":"Core","reward":8,"market":"Southeast"},{"id":"CORE157","origin":"Washington DC","destination":"Baltimore","commodity":"Packaging","miles":50,"segments":1,"equipment":"Dry Van","type":"Core","reward":2,"market":"Northeast"},{"id":"CORE158","origin":"Washington DC","destination":"Seattle","commodity":"Consumer Goods","miles":3100,"segments":62,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE159","origin":"Washington DC","destination":"Boise","commodity":"Food Products","miles":2750,"segments":55,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE160","origin":"Washington DC","destination":"El Paso","commodity":"Building Materials","miles":2100,"segments":42,"equipment":"Dry Van","type":"Core","reward":8,"market":"Northeast"},{"id":"CORE161","origin":"Baltimore","destination":"Philadelphia","commodity":"Consumer Goods","miles":100,"segments":2,"equipment":"Dry Van","type":"Core","reward":2,"market":"Northeast"},{"id":"CORE162","origin":"Baltimore","destination":"Portland","commodity":"Food Products","miles":3150,"segments":63,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE163","origin":"Baltimore","destination":"Phoenix","commodity":"Building Materials","miles":2500,"segments":50,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE164","origin":"Baltimore","destination":"Fort Worth","commodity":"Machinery","miles":1550,"segments":31,"equipment":"Dry Van","type":"Core","reward":6,"market":"Northeast"},{"id":"CORE165","origin":"Philadelphia","destination":"New York","commodity":"Food Products","miles":100,"segments":2,"equipment":"Dry Van","type":"Core","reward":2,"market":"Northeast"},{"id":"CORE166","origin":"Philadelphia","destination":"San Jose","commodity":"Building Materials","miles":3050,"segments":61,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE167","origin":"Philadelphia","destination":"Tucson","commodity":"Machinery","miles":2550,"segments":51,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE168","origin":"Philadelphia","destination":"Omaha","commodity":"Paper Products","miles":1300,"segments":26,"equipment":"Dry Van","type":"Core","reward":6,"market":"Northeast"},{"id":"CORE169","origin":"New York","destination":"Boston","commodity":"Building Materials","miles":200,"segments":4,"equipment":"Dry Van","type":"Core","reward":3,"market":"Northeast"},{"id":"CORE170","origin":"New York","destination":"Sacramento","commodity":"Machinery","miles":3000,"segments":60,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE171","origin":"New York","destination":"Mesa","commodity":"Paper Products","miles":2650,"segments":53,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE172","origin":"New York","destination":"Oklahoma City","commodity":"Auto Parts","miles":1600,"segments":32,"equipment":"Dry Van","type":"Core","reward":7,"market":"Northeast"},{"id":"CORE173","origin":"Boston","destination":"San Francisco","commodity":"Machinery","miles":3300,"segments":66,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE174","origin":"Boston","destination":"Fresno","commodity":"Paper Products","miles":3350,"segments":67,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE175","origin":"Boston","destination":"Salt Lake City","commodity":"Auto Parts","miles":2550,"segments":51,"equipment":"Dry Van","type":"Core","reward":9,"market":"Northeast"},{"id":"CORE176","origin":"Boston","destination":"Austin","commodity":"Household Goods","miles":2100,"segments":42,"equipment":"Dry Van","type":"Core","reward":8,"market":"Northeast"}],"coords":{"Seattle":[85,75],"Portland":[90,145],"Sacramento":[105,245],"San Francisco":[75,270],"San Jose":[90,290],"Fresno":[120,325],"Los Angeles":[125,385],"San Diego":[145,455],"Las Vegas":[205,345],"Phoenix":[250,410],"Mesa":[265,420],"Tucson":[260,465],"Salt Lake City":[270,250],"Boise":[220,165],"Billings":[360,120],"Denver":[390,280],"Albuquerque":[370,405],"El Paso":[405,485],"San Antonio":[515,485],"Austin":[515,430],"Dallas":[520,365],"Fort Worth":[495,365],"Houston":[585,455],"Oklahoma City":[500,310],"Kansas City":[535,245],"Omaha":[500,190],"Minneapolis":[555,115],"Milwaukee":[625,155],"Chicago":[645,195],"Indianapolis":[690,245],"Louisville":[690,300],"Nashville":[700,350],"Memphis":[650,355],"St. Louis":[625,270],"Detroit":[710,175],"Columbus":[755,235],"Charlotte":[785,355],"Atlanta":[750,390],"Jacksonville":[800,475],"Baltimore":[835,270],"Washington DC":[825,300],"Philadelphia":[850,235],"New York":[860,200],"Boston":[875,145],"Montgomery":[720,430],"New Orleans":[650,485]},"freightCities":["Albuquerque","Atlanta","Austin","Baltimore","Billings","Boise","Boston","Charlotte","Chicago","Columbus","Dallas","Denver","Detroit","El Paso","Fort Worth","Fresno","Houston","Indianapolis","Jacksonville","Kansas City","Las Vegas","Los Angeles","Louisville","Memphis","Mesa","Milwaukee","Minneapolis","Nashville","New York","Oklahoma City","Omaha","Philadelphia","Phoenix","Portland","Sacramento","Salt Lake City","San Antonio","San Diego","San Francisco","San Jose","Seattle","St. Louis","Tucson","Washington DC"],"junctions":["Montgomery","New Orleans"],"truckStops":[{"name":"Iowa 80 Truckstop","route":["Omaha","Chicago"],"fraction":0.58},{"name":"Little America, WY","route":["Salt Lake City","Denver"],"fraction":0.42},{"name":"Jubitz Travel Center","route":["Portland","Boise"],"fraction":0.08},{"name":"Whiskey Pete's / Primm","route":["Los Angeles","Las Vegas"],"fraction":0.78},{"name":"Kenly 95 Petro","route":["Charlotte","Washington DC"],"fraction":0.48},{"name":"Buc-ee's New Braunfels","route":["Austin","San Antonio"],"fraction":0.7},{"name":"TA Ontario","route":["Los Angeles","Phoenix"],"fraction":0.12},{"name":"Flying J Barstow","route":["Los Angeles","Las Vegas"],"fraction":0.43}],"cityMarkets":{"Seattle":"Northwest","Portland":"Northwest","Boise":"Northwest","Billings":"Northwest","Sacramento":"Southwest","San Francisco":"Southwest","San Jose":"Southwest","Fresno":"Southwest","Los Angeles":"Southwest","San Diego":"Southwest","Las Vegas":"Southwest","Phoenix":"Southwest","Mesa":"Southwest","Tucson":"Southwest","Salt Lake City":"Southwest","Denver":"Southwest","Albuquerque":"Southwest","Minneapolis":"North Central","Milwaukee":"North Central","Chicago":"North Central","Detroit":"North Central","Omaha":"North Central","Kansas City":"North Central","St. Louis":"North Central","Indianapolis":"North Central","Columbus":"North Central","Oklahoma City":"South Central","Dallas":"South Central","Fort Worth":"South Central","Austin":"South Central","San Antonio":"South Central","Houston":"South Central","El Paso":"South Central","Memphis":"South Central","New Orleans":"South Central","Louisville":"Northeast","Washington DC":"Northeast","Baltimore":"Northeast","Philadelphia":"Northeast","New York":"Northeast","Boston":"Northeast","Nashville":"Southeast","Atlanta":"Southeast","Charlotte":"Southeast","Jacksonville":"Southeast","Montgomery":"Southeast"}};
+function xy(name) {
+  const c = DATA.coords[name] || [450,300];
+  return [Number(c[0]), Number(c[1])];
+}
+const COLORS = ["#4da3ff","#f36c6c","#67d39b","#c58cff","#ff9d4d","#f2b84b"];
+const state = {justChangedTurn:false,bookingsThisTurn:0,
+  players: [],
+  market: [],
+  deck: [],
+  discard: [],
+  current: 0,
+  gameTime: 0,
+  round: 1,
+  activeTab: "turn",
+  started: false,
+  finished: false,
+  driveMode: false,
+  mapView:{x:0,y:0,w:900,h:600},
+  panPointers:new Map(),
+  routePreview:null,
+  undoSnapshot:null,
+  undoLabel:"",
+  turnActionSerial:0,
+  marketCycle:1,
+  repTarget:25,
+  regionDecks:{},
+  regionMarkets:{},
+  searchMode:false,
+  searchSelections:[],
+  expandedLoadId:null,
+  regionsVisible:true,
+  pendingTurnNotice:null,
+  dropHooksEnabled:true,
+  dhLanes:[],
+  dhTrailerPool:{},
+  dhDeckCards:[]
+};
+
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a;}
+function timeLabel(t){
+  let v=mod48(t),h=Math.floor(v),m=Math.round((v-h)*60);
+  if(m===60){h=(h+1)%48;m=0}
+  return String(h).padStart(2,"0")+":"+(m===30?"30":"00");
+}
+function hoursLabel(h){return Number.isInteger(h)?`${h}`:`${Math.floor(h)}½`}
+function mod48(x){return ((x%48)+48)%48;}
+function distanceTo(a,b) {
+  if(a===b) return 0;
+  const q=[[a,0]], seen=new Set([a]);
+  while(q.length) {
+    const [u,d]=q.shift();
+    for(const r of DATA.edges) {
+      let v=null;
+      if(r.a===u) v=r.b; else if(r.b===u) v=r.a;
+      if(v && !seen.has(v)) {
+        if(v===b) return d+r.segments;
+        seen.add(v); q.push([v,d+r.segments]);
+      }
+    }
+  }
+  return null;
+}
+function cityNeighbors(a) {
+  return DATA.edges.filter(r=>r.a===a||r.b===a).map(r=>({city:r.a===a?r.b:r.a,segments:r.segments}));
+}
+
+function playerCity(p){ return p.position && p.position.type==="city" ? p.position.city : null; }
+function positionLabel(p){
+  if(!p.position) return "";
+  if(p.position.type==="city") return p.position.city;
+  return `${p.position.from} → ${p.position.to} · ${p.position.progress}/${p.position.total} hr`;
+}
+function routeBetween(a,b){
+  return DATA.edges.find(r=>(r.a===a&&r.b===b)||(r.a===b&&r.b===a));
+}
+function routePoint(from,to,progress,total){
+  const A=xy(from), B=xy(to), f=Math.max(0,Math.min(1,progress/total));
+  return [A[0]+(B[0]-A[0])*f, A[1]+(B[1]-A[1])*f];
+}
+function truckXY(p){
+  if(p.position.type==="city") return xy(p.position.city);
+  return routePoint(p.position.from,p.position.to,p.position.progress,p.position.total);
+}
+function remainingDrive(p){ return Math.max(0,11-p.driving); }
+function nextPlayer(){
+  const oldCurrent=state.current;
+  let best=0;
+  for(let i=1;i<state.players.length;i++){
+    if(state.players[i].time<state.players[best].time) best=i;
+  }
+  state.current=best;
+  state.bookingsThisTurn=0;
+  state.justChangedTurn=(state.current!==oldCurrent);
+  if(state.justChangedTurn){
+    state.routePreview=null;
+    state.searchMode=false;
+    state.searchSelections=[];
+    state.expandedLoadId=null;
+    state.pendingTurnNotice={player:state.current};
+  }
+}
+
+function deepCloneGameState(){
+  return JSON.parse(JSON.stringify({
+    players:state.players,
+    market:state.market,
+    deck:state.deck,
+    regionDecks:state.regionDecks,
+    regionMarkets:state.regionMarkets,
+    discard:state.discard,
+    current:state.current,
+    gameTime:state.gameTime,
+    marketCycle:state.marketCycle,
+    dhLanes:state.dhLanes,
+    dhTrailerPool:state.dhTrailerPool,
+    dropHooksEnabled:state.dropHooksEnabled
+  }));
+}
+function createUndo(label){
+  state.undoSnapshot=deepCloneGameState();
+  state.undoLabel=label;
+}
+function clearUndo(){ state.undoSnapshot=null; state.undoLabel=""; }
+function undoLastAction(){
+  if(!state.undoSnapshot) return;
+  const snap=state.undoSnapshot;
+  state.players=snap.players;
+  state.market=snap.market;
+  state.deck=snap.deck;
+  state.regionDecks=snap.regionDecks||{};
+  state.regionMarkets=snap.regionMarkets||{};
+  state.discard=snap.discard;
+  state.current=snap.current;
+  state.gameTime=snap.gameTime;
+  state.marketCycle=snap.marketCycle;
+  state.dhLanes=snap.dhLanes||[];
+  state.dhTrailerPool=snap.dhTrailerPool||{};
+  state.dropHooksEnabled=!!snap.dropHooksEnabled;
+  clearUndo();
+  state.driveMode=false;
+  state.routePreview=null;
+  state.justChangedTurn=true;
+  render();
+}
+function spend(p,h,kind) {
+  p.time += h;
+  if(kind==="drive") p.driving += h;
+  if(kind!=="rest") p.window += h;
+  state.gameTime = p.time;
+}
+function canDrive(p,h) {
+  return p.driving+h<=11;
+}
+function openModal(content) {
+  document.getElementById("modal").innerHTML=content;
+  document.getElementById("modalBack").style.display="flex";
+}
+function closeModal(){document.getElementById("modalBack").style.display="none";}
+
+function autoAssignStarts(){
+  const n=Number(document.getElementById("playerCount").value);
+  const used=new Set(), picks=[];
+  let guard=0;
+  while(picks.length<n && guard<5000){
+    guard++;
+    const l=DATA.loads[Math.floor(Math.random()*DATA.loads.length)];
+    if(!l || used.has(l.origin)) continue;
+    used.add(l.origin); picks.push(l.origin);
+  }
+  if(picks.length<n){openModal(`<h3>Unable to assign starts</h3><p>Could not find enough unique pickup cities.</p><button onclick="setup()">Back</button>`);return;}
+  const cities=(DATA.freightCities||Object.keys(DATA.coords)).slice().sort();
+  document.getElementById("startFields").innerHTML=picks.map((city,i)=>`<div class="start-assignment"><span>Player ${i+1}</span>
+    <select id="start${i}">${cities.map(c=>`<option ${c===city?"selected":""}>${esc(c)}</option>`).join("")}</select></div>`).join("");
+}
+function startGame(){
+  const n=Number(document.getElementById("playerCount").value);
+  state.repTarget=Number(document.getElementById("repTarget").value);
+  state.dropHooksEnabled=!!document.getElementById("dropHooksEnabled")?.checked;
+
+  // Randomize player order first.
+  const order=shuffle(Array.from({length:n},(_,i)=>i));
+
+  // Draw unique starting pickup cities from the full freight card pool.
+  const used=new Set(), starts=[];
+  let guard=0;
+  while(starts.length<n && guard<10000){
+    guard++;
+    const l=DATA.loads[Math.floor(Math.random()*DATA.loads.length)];
+    if(!l||used.has(l.origin)) continue;
+    used.add(l.origin);
+    starts.push(l.origin);
+  }
+  if(starts.length<n){
+    openModal(`<h3>Setup Error</h3><p>Could not assign unique starting cities.</p><button class="primary" onclick="setup()">Back</button>`);
+    return;
+  }
+
+  state.players=order.map((originalIndex,i)=>({
+    name:"Player "+(originalIndex+1),
+    color:COLORS[originalIndex],
+    position:{type:"city",city:starts[i]},
+    time:0,driving:0,window:0,reputation:0,
+    booked:[],active:null,completed:[],rested:false,personalTrailerLocation:starts[i],dhActive:null
+  }));
+
+  state.deck=[];state.market=[];state.discard=[];
+  initRegionalFreight();
+  state.current=0;state.started=true;state.finished=false;state.justChangedTurn=true;
+  state.mapView={x:0,y:0,w:900,h:600};
+  state.routePreview=null;state.searchMode=false;state.searchSelections=[];state.expandedLoadId=null;
+  state.pendingTurnNotice={player:0};
+  clearUndo();
+  const go=document.getElementById("gameOverOverlay");if(go)go.style.display="none";
+  closeModal();
+  render();
+}
+
+const DROP_HOOK_CARDS=[{"id":"DH001","origin":"Seattle","destination":"Portland","commodity":"Drop & Hook","miles":150,"segments":3,"equipment":"D/H Dry Van","type":"DropHook","reward":2,"market":"Northwest","volume":3},{"id":"DH002","origin":"Portland","destination":"Boise","commodity":"Drop & Hook","miles":450,"segments":9,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"Northwest","volume":2},{"id":"DH003","origin":"Boise","destination":"Seattle","commodity":"Drop & Hook","miles":600,"segments":12,"equipment":"D/H Dry Van","type":"DropHook","reward":4,"market":"Northwest","volume":2},{"id":"DH004","origin":"Billings","destination":"Seattle","commodity":"Drop & Hook","miles":800,"segments":16,"equipment":"D/H Dry Van","type":"DropHook","reward":4,"market":"Northwest","volume":2},{"id":"DH005","origin":"Los Angeles","destination":"Phoenix","commodity":"Drop & Hook","miles":350,"segments":7,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"Southwest","volume":5},{"id":"DH006","origin":"Phoenix","destination":"Las Vegas","commodity":"Drop & Hook","miles":300,"segments":6,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"Southwest","volume":4},{"id":"DH007","origin":"Las Vegas","destination":"Salt Lake City","commodity":"Drop & Hook","miles":400,"segments":8,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"Southwest","volume":3},{"id":"DH008","origin":"Denver","destination":"Los Angeles","commodity":"Drop & Hook","miles":1150,"segments":23,"equipment":"D/H Dry Van","type":"DropHook","reward":5,"market":"Southwest","volume":3},{"id":"DH009","origin":"Chicago","destination":"Detroit","commodity":"Drop & Hook","miles":300,"segments":6,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"North Central","volume":5},{"id":"DH010","origin":"Detroit","destination":"Columbus","commodity":"Drop & Hook","miles":200,"segments":4,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"North Central","volume":3},{"id":"DH011","origin":"Omaha","destination":"Chicago","commodity":"Drop & Hook","miles":450,"segments":9,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"North Central","volume":4},{"id":"DH012","origin":"Kansas City","destination":"St. Louis","commodity":"Drop & Hook","miles":250,"segments":5,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"North Central","volume":4},{"id":"DH013","origin":"Dallas","destination":"Houston","commodity":"Drop & Hook","miles":250,"segments":5,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"South Central","volume":5},{"id":"DH014","origin":"Houston","destination":"San Antonio","commodity":"Drop & Hook","miles":200,"segments":4,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"South Central","volume":4},{"id":"DH015","origin":"Oklahoma City","destination":"Dallas","commodity":"Drop & Hook","miles":200,"segments":4,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"South Central","volume":3},{"id":"DH016","origin":"Memphis","destination":"Dallas","commodity":"Drop & Hook","miles":650,"segments":13,"equipment":"D/H Dry Van","type":"DropHook","reward":4,"market":"South Central","volume":2},{"id":"DH017","origin":"New York","destination":"Boston","commodity":"Drop & Hook","miles":200,"segments":4,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"Northeast","volume":5},{"id":"DH018","origin":"Philadelphia","destination":"New York","commodity":"Drop & Hook","miles":100,"segments":2,"equipment":"D/H Dry Van","type":"DropHook","reward":2,"market":"Northeast","volume":4},{"id":"DH019","origin":"Louisville","destination":"Indianapolis","commodity":"Drop & Hook","miles":100,"segments":2,"equipment":"D/H Dry Van","type":"DropHook","reward":2,"market":"Northeast","volume":3},{"id":"DH020","origin":"Washington DC","destination":"Philadelphia","commodity":"Drop & Hook","miles":150,"segments":3,"equipment":"D/H Dry Van","type":"DropHook","reward":2,"market":"Northeast","volume":3},{"id":"DH021","origin":"Atlanta","destination":"Charlotte","commodity":"Drop & Hook","miles":250,"segments":5,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"Southeast","volume":5},{"id":"DH022","origin":"Charlotte","destination":"Jacksonville","commodity":"Drop & Hook","miles":400,"segments":8,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"Southeast","volume":4},{"id":"DH023","origin":"Nashville","destination":"Atlanta","commodity":"Drop & Hook","miles":600,"segments":12,"equipment":"D/H Dry Van","type":"DropHook","reward":4,"market":"Southeast","volume":3},{"id":"DH024","origin":"Jacksonville","destination":"Atlanta","commodity":"Drop & Hook","miles":350,"segments":7,"equipment":"D/H Dry Van","type":"DropHook","reward":3,"market":"Southeast","volume":3}];
+const MARKET_REGIONS=["Northwest","North Central","Northeast","Southwest","South Central","Southeast"];
+function regionalMarketSize(){return state.players.length||2}
+function syncRegionalMarket(){state.market=MARKET_REGIONS.flatMap(r=>state.regionMarkets[r]||[])}
+function promoteDropHookCard(l){
+  if(!l||l.type!=="DropHook") return false;
+  if(!state.dhLanes.some(x=>x.id===l.id)){
+    state.dhLanes.push({...l});
+    state.dhTrailerPool[l.origin]=(state.dhTrailerPool[l.origin]||0)+(l.volume||2);
+  }
+  return true;
+}
+function refillRegion(r){
+  const d=state.regionDecks[r]||[];
+  while(d.length){
+    const l=d.shift();
+    if(state.dropHooksEnabled&&promoteDropHookCard(l)) continue;
+    state.regionMarkets[r].push(l);break;
+  }
+  syncRegionalMarket();
+}
+function initRegionalFreight(){
+  state.regionDecks={};state.regionMarkets={};state.dhLanes=[];state.dhTrailerPool={};
+  for(const r of MARKET_REGIONS){
+    const core=DATA.loads.filter(l=>l.market===r).map(l=>({...l}));
+    const dh=state.dropHooksEnabled?DROP_HOOK_CARDS.filter(l=>l.market===r).map(l=>({...l})):[];
+    state.regionDecks[r]=shuffle(core.concat(dh));
+    state.regionMarkets[r]=[];
+    while(state.regionMarkets[r].length<regionalMarketSize()) refillRegion(r);
+  }
+  syncRegionalMarket();
+}
+function marketSize(){
+  const count = (typeof state!=="undefined" && state.players) ? state.players.length :
+                (typeof S!=="undefined" && S.players) ? S.players.length : 1;
+  return count + 4;
+}
+function refillMarket() {
+  if(state.deck.length) state.market.push(state.deck.pop());
+  else if(state.discard.length) state.market.push(state.discard.shift());
+}
+function bookLoad(id){
+ if(state.finished)return;clearUndo();const p=state.players[state.current];
+  if(p.booked.length>=3){openModal(`<h3>Booking Limit</h3><p>Maximum of 3 booked loads.</p><button class="primary" onclick="closeModal()">OK</button>`);return;}let rr=null,idx=-1,l=null;
+ for(const r of MARKET_REGIONS){idx=(state.regionMarkets[r]||[]).findIndex(x=>x.id===id);if(idx>=0){rr=r;l=state.regionMarkets[r][idx];break}}
+ if(!l)return;state.expandedLoadId=null;p.booked.push(l);state.regionMarkets[rr].splice(idx,1);refillRegion(rr);syncRegionalMarket();render()
+}
+
+function searchLoadBoards(){
+  if(state.finished) return;
+  state.searchMode=true;
+  state.searchSelections=[];
+  state.expandedLoadId=null;
+  renderMarket();
+  const fm=document.querySelector(".freight-market-wide");
+  if(fm) fm.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function setAllLoadSearch(value){
+  state.searchSelections=value ? state.market.map(l=>l.id) : [];
+  renderMarket();
+}
+function confirmLoadSearch(){
+  if(!state.searchMode) return;
+  const ids=state.searchSelections.slice();
+  if(!ids.length) return;
+  clearUndo();
+  for(const r of MARKET_REGIONS){
+    const a=state.regionMarkets[r]||[];
+    const removed=a.filter(l=>ids.includes(l.id));
+    if(!removed.length) continue;
+    state.discard.push(...removed);
+    state.regionMarkets[r]=a.filter(l=>!ids.includes(l.id));
+    while(state.regionMarkets[r].length<regionalMarketSize()) refillRegion(r);
+  }
+  syncRegionalMarket();
+  state.searchMode=false;
+  state.searchSelections=[];
+  state.expandedLoadId=null;
+  spend(state.players[state.current],1,"search");
+  nextPlayer();
+  render();
+}
+
+function cancelLoadSearch(){
+  state.searchMode=false;
+  state.searchSelections=[];
+  renderMarket();
+}
+function toggleSearchLoad(id){
+  if(!state.searchMode) return;
+  const i=state.searchSelections.indexOf(id);
+  if(i>=0) state.searchSelections.splice(i,1);
+  else state.searchSelections.push(id);
+  renderMarket();
+}
+function toggleLoadCard(id){
+  if(state.searchMode){
+    toggleSearchLoad(id);
+    return;
+  }
+  state.expandedLoadId = state.expandedLoadId===id ? null : id;
+  renderMarket();
+}
+function drive() {
+  if(state.finished) return;
+  const p=state.players[state.current];
+  if(p.rested) return;
+  if(remainingDrive(p)<=0){
+    openModal(`<h3>No driving hours remaining</h3><p>Take a 10-hour reset before driving again.</p><button class="primary" onclick="closeModal()">OK</button>`);
+    return;
+  }
+  state.driveMode=true;
+  render();
+}
+function chooseRouteHours(destination){
+  const p=state.players[state.current];
+  const origin=playerCity(p);
+  const r=routeBetween(origin,destination);
+  if(!r) return;
+  const max=Math.min(r.segments,remainingDrive(p));
+  if(max<=0){
+    openModal(`<h3>No driving hours remaining</h3><p>Take a 10-hour rest before continuing.</p><button class="primary" onclick="closeModal()">OK</button>`);
+    return;
+  }
+  openModal(`<h3>${esc(origin)} → ${esc(destination)}</h3>
+    <p class="small">Route length: ${r.segments} hours / ${r.segments*50} miles. Choose how many hours to drive now.</p>
+    <div class="choicegrid">${Array.from({length:max},(_,i)=>i+1).map(h=>`<button onclick="driveHoursFromCity('${esc(origin)}','${esc(destination)}',${r.segments},${h})">${h} hr<br><span class="small">${h*50} miles</span></button>`).join("")}</div>
+    <button onclick="closeModal()">Cancel</button>`);
+}
+function driveHoursFromCity(origin,destination,total,h){
+  const p=state.players[state.current];
+  if(h>remainingDrive(p)) return;
+  spend(p,h,"drive");
+  if(h>=total) p.position={type:"city",city:destination};
+  else p.position={type:"route",from:origin,to:destination,total,progress:h};
+  state.driveMode=false;
+  closeModal();
+  nextPlayer();
+  render();
+}
+function chooseContinueHours(){
+  const p=state.players[state.current], q=p.position;
+  if(q.type!=="route") return;
+  const remaining=q.total-q.progress;
+  const max=Math.min(remaining,remainingDrive(p));
+  if(max<=0){
+    openModal(`<h3>No driving hours remaining</h3><p>You are stopped at a rest area between ${esc(q.from)} and ${esc(q.to)}. Take a 10-hour rest before continuing.</p><button class="primary" onclick="closeModal()">OK</button>`);
+    return;
+  }
+  openModal(`<h3>Continue toward ${esc(q.to)}</h3>
+    <p class="small">${remaining} hours / ${remaining*50} miles remain. Choose how many hours to drive.</p>
+    <div class="choicegrid">${Array.from({length:max},(_,i)=>i+1).map(h=>`<button onclick="continueHours(${h})">${h} hr<br><span class="small">${h*50} miles</span></button>`).join("")}</div>
+    <button onclick="closeModal()">Cancel</button>`);
+}
+function continueHours(h){
+  const p=state.players[state.current], q=p.position;
+  if(q.type!=="route" || h>remainingDrive(p)) return;
+  q.progress += h;
+  spend(p,h,"drive");
+  if(q.progress>=q.total) p.position={type:"city",city:q.to};
+  closeModal();
+  nextPlayer();
+  render();
+}
+
+function personalTrailerWithPlayer(p){
+  const c=playerCity(p); return !!c && p.personalTrailerLocation===c && !p.dhActive;
+}
+function dhTrailersAt(city){return state.dhTrailerPool[city]||0}
+function dhOptionsAt(city){return (state.dhLanes||[]).filter(l=>l.origin===city)}
+function canDropHookNow(p){
+  const c=playerCity(p);
+  return !!(state.dropHooksEnabled&&c&&!p.active&&!p.dhActive&&dhTrailersAt(c)>0&&dhOptionsAt(c).length);
+}
+function dwellRoll(){
+  const vals=[-.5,0,0,.5,1,1.5], face=Math.floor(Math.random()*6);
+  return {face:face+1,modifier:vals[face],total:1+vals[face]};
+}
+function dwellText(v){return v===0?"No modifier":(v>0?`+${v===.5?"½":v} hr`:`−½ hr`)}
+
+function startDropHook(id){
+  const p=state.players[state.current],c=playerCity(p);
+  const l=(state.dhLanes||[]).find(x=>x.id===id);
+  if(!l||!c||l.origin!==c||p.active||p.dhActive||dhTrailersAt(c)<=0)return;
+  createUndo("Drop & Hook");
+  if(p.personalTrailerLocation===c) p.personalTrailerLocation=c; // left at shipper
+  state.dhTrailerPool[c]-=1;
+  p.dhActive={...l};
+  spend(p,.5,"dropHook");
+  nextPlayer();render();closeModal();
+}
+function dropHookAction(){
+  const p=state.players[state.current],c=playerCity(p);
+  if(!c)return;
+  if(p.dhActive){
+    if(c!==p.dhActive.destination){
+      openModal(`<h3>Wrong destination</h3><p>This D/H trailer delivers in ${esc(p.dhActive.destination)}.</p><button onclick="closeModal()">OK</button>`);return;
+    }
+    const l=p.dhActive;createUndo("Drop D/H trailer");spend(p,.5,"dropHook");
+    state.dhTrailerPool[c]=(state.dhTrailerPool[c]||0)+1;
+    p.reputation+=l.reward;p.completed=p.completed||[];p.completed.push({...l});
+    p.dhActive=null;checkGameEnd();
+    if(!state.finished){nextPlayer();render()}else render();
+    return;
+  }
+  const opts=dhOptionsAt(c);
+  if(!opts.length||dhTrailersAt(c)<=0){
+    openModal(`<h3>No Drop & Hook available</h3><p>There is no D/H trailer and active lane available at ${esc(c)}.</p><button onclick="closeModal()">OK</button>`);return;
+  }
+  openModal(`<h3>Drop & Hook at ${esc(c)}</h3><p class="small">${dhTrailersAt(c)} D/H trailer(s) available.</p>
+    <div class="choicegrid">${opts.map(l=>`<button onclick="startDropHook('${l.id}')">${esc(l.origin)} → ${esc(l.destination)}<br><span class="small">${l.reward} REP · ½ hr hook</span></button>`).join("")}</div>
+    <button onclick="closeModal()">Cancel</button>`);
+}
+function loadActive() {
+  if(state.finished) return;
+  const p=state.players[state.current];
+  if(p.active||p.dhActive) return;
+  if(state.dropHooksEnabled&&!personalTrailerWithPlayer(p)){
+    openModal(`<h3>No personal trailer</h3><p>Your personal trailer is in ${esc(p.personalTrailerLocation||"another city")}. Reconnect with it before taking live freight.</p><button onclick="closeModal()">OK</button>`);return;
+  }
+  const city=playerCity(p);
+  if(!city){openModal(`<h3>You're between cities</h3><p>You may rest here, but you must reach the shipper city to load freight.</p><button class="primary" onclick="closeModal()">OK</button>`);return;}
+  const options=p.booked.filter(l=>l.origin===city);
+  if(!options.length) {
+    openModal(`<h3>No load available here</h3><p>You must be at the shipper city of a booked load.</p><button onclick="closeModal()">OK</button>`);
+    return;
+  }
+  openModal(`<h3>Load freight at ${esc(city)}</h3>
+    <div class="choicegrid">${options.map(l=>`<button onclick="doLoad('${l.id}')">${esc(l.origin)} → ${esc(l.destination)}<br><span class="small">${esc(l.commodity)} · ${esc(l.equipment)}</span></button>`).join("")}</div>
+    <button onclick="closeModal()">Cancel</button>`);
+}
+function doLoad(id) {
+  const p=state.players[state.current];
+  const idx=p.booked.findIndex(l=>l.id===id);
+  if(idx<0) return;
+  createUndo("Load freight");
+  p.active=p.booked.splice(idx,1)[0];
+  spend(p,1,"load");
+  nextPlayer(); render(); closeModal();
+}
+function unloadActive(){
+  if(state.finished)return;
+  const p=state.players[state.current];
+  if(!p.active){openModal(`<h3>No active load</h3><p>You need to load freight before unloading.</p><button onclick="closeModal()">OK</button>`);return}
+  const city=playerCity(p);
+  if(city!==p.active.destination){openModal(`<h3>Wrong destination</h3><p>This load delivers in ${esc(p.active.destination)}.</p><button onclick="closeModal()">OK</button>`);return}
+  const l=p.active,r=state.dropHooksEnabled?dwellRoll():{face:null,modifier:0,total:1};
+  createUndo("Unload freight");spend(p,r.total,"unload");
+  p.reputation+=l.reward;p.completed=p.completed||[];p.completed.push(l);p.active=null;
+  checkGameEnd();
+  if(state.finished){render();return}
+  if(!state.dropHooksEnabled){nextPlayer();render();closeModal();return}
+  openModal(`<h3>Live Unload Dwell</h3><div class="dwell-die">🎲 ${r.face}</div>
+    <p>Base 1 hr · <b>${dwellText(r.modifier)}</b></p><p>Total unloading time: <b>${r.total===.5?"½":r.total} hr</b></p>
+    <button class="primary" onclick="closeModal();nextPlayer();render()">Continue</button>`);
+}
+
+function refreshFreightMarket(){
+  if(typeof state!=="undefined"){
+    state.discard.push(...state.market);
+    state.market=[];
+    while(state.market.length<marketSize()) refillMarket();
+  }
+}
+function doRest(){
+  const p=state.players[state.current];createUndo("10-hour reset");spend(p,10,"rest");p.driving=0;p.window=0;p.rested=false;nextPlayer();render();
+}
+
+function rest(){
+  if(state.finished) return;
+  const rem=remainingDrive(state.players[state.current]);
+  if(rem>=5){
+    openModal(`<h3>Confirm Rest</h3><p>You have <b>${rem} available drive hours remaining</b>. Are you sure?</p>
+      <div class="row"><button onclick="closeModal()">No</button><button class="primary" onclick="closeModal();doRest()">Yes</button></div>`);
+    return;
+  }
+  doRest();
+}
+
+function showTab(tab){state.activeTab=tab;renderTabs();}
+
+function playerCity(p){return p.position&&p.position.type==="city"?p.position.city:null}
+function canLoadNow(p){const c=playerCity(p);return !!c&&!p.active&&!p.dhActive&&(!state.dropHooksEnabled||personalTrailerWithPlayer(p))&&p.booked.some(l=>l.origin===c)}
+function canUnloadNow(p){const c=playerCity(p);return !!c&&!!p.active&&p.active.destination===c}
+function renderTabs(){
+  const p=state.players[state.current];
+  if(!state.started){document.getElementById("tabcontent").innerHTML=`<div class="small">Start a game.</div>`;return;}
+
+  const activeHtml=p.dhActive?`<div class="current-load-card active-load load-state-active"><div class="load-state-tag">DROP & HOOK</div><div class="load-title"><span>${esc(p.dhActive.origin)}</span> → <span class="delivery-city">${esc(p.dhActive.destination)}</span></div><div class="load-meta">D/H Dry Van · ${p.dhActive.reward} REP</div><button class="load-map-btn" onclick="previewLoadRoute('${p.dhActive.id}')">🗺 Route</button></div>`:p.active?`<div class="current-load-card active-load load-state-active">
+    <div class="load-state-tag">DELIVER</div>
+    <div class="load-title"><span>${esc(p.active.origin)}</span> → <span class="delivery-city">${esc(p.active.destination)}</span></div>
+    <div class="load-meta">${esc(p.active.commodity)} · ${esc(p.active.equipment)} · ${p.active.reward} REP</div>
+    <button class="load-map-btn" onclick="previewLoadRoute('${p.active.id}')">🗺 Route</button>
+  </div>`:`<div class="small">No active load.</div>`;
+
+  const bookedHtml=p.booked.length?p.booked.map(l=>`<div class="current-load-card load-state-pickup">
+    <div class="load-state-tag">PICKUP</div>
+    <div class="load-title"><span class="pickup-city">${esc(l.origin)}</span> → <span>${esc(l.destination)}</span></div>
+    <div class="market-tag below-route">${esc(l.market||DATA.cityMarkets?.[l.origin]||"")}</div>
+    <div class="load-meta">${esc(l.commodity)} · ${esc(l.equipment)} · ${l.reward} REP</div>
+    <button class="load-map-btn" onclick="previewLoadRoute('${l.id}')">🗺 Route</button>
+  </div>`).join(""):`<div class="small">No booked loads.</div>`;
+
+  document.getElementById("tabcontent").innerHTML=`
+    <div class="driver-dashboard-head"><div><div class="driver-dashboard-title">Driver Dashboard</div><div class="driver-dashboard-player" style="color:${p.color}">${esc(p.name)} · ${esc(positionLabel(p))}${playerCity(p)?` · ${esc(regionForCity(playerCity(p)))}`:""}</div></div><span class="badge">🕒 Drive ${remainingDrive(p)}h left</span></div>
+    ${equipmentHtml(p)}
+    <div class="v2-action-area">
+      <div class="v2-action-stack">
+        <button class="undo-btn" onclick="undoLastAction()" ${state.undoSnapshot?"":"disabled"}>↶ ${state.undoSnapshot?"Undo "+esc(state.undoLabel):"Nothing to Undo"}</button>
+        <button class="action-btn" onclick="searchLoadBoards()">🔎 Search Loads · 1 hr</button>
+        <button class="action-btn" onclick="drive()" ${remainingDrive(p)<=0?"disabled":""}>🚛 Drive · ~${remainingDrive(p)} hrs</button>
+        <button class="action-btn" onclick="loadActive()" ${canLoadNow(p)?"":"disabled"}>📦 Live Load 🎲</button>
+        <button class="action-btn" onclick="unloadActive()" ${canUnloadNow(p)?"":"disabled"}>📤 Live Unload 🎲</button>
+        ${state.dropHooksEnabled?`<button class="action-btn dh-action" onclick="dropHookAction()" ${(canDropHookNow(p)||(p.dhActive&&playerCity(p)===p.dhActive.destination))?"":"disabled"}>🔁 ${p.dhActive?"Drop D/H":"Drop & Hook"} · ½ hr</button>`:""}
+        <button class="action-btn ${remainingDrive(p)===0?"rest-critical":remainingDrive(p)<=5?"rest-warning":""}" onclick="rest()">😴 Rest · 10 hr</button>
+      </div>
+      <div class="current-loads-panel">
+        <h3>Active Load</h3>${activeHtml}
+        <h3 style="margin-top:10px">Booked Loads <span class="book-limit ${p.booked.length>=3?"full":""}">(${p.booked.length}/3)</span></h3>${bookedHtml}
+      </div>
+    </div>`;
+}
+function renderMarket(){
+  const w=document.getElementById("regionalMarket");
+  const old=document.getElementById("market");
+  const controls=document.getElementById("searchModeControls");
+  if(old) old.innerHTML="";
+  if(!w) return;
+
+  if(controls){
+    controls.innerHTML=state.searchMode
+      ? `<span class="search-mode-banner">Select loads to replace — all selections redraw together for 1 hour.</span>
+         <button onclick="setAllLoadSearch(true)">Select All</button>
+         <button onclick="setAllLoadSearch(false)">Clear All</button>
+         <button onclick="cancelLoadSearch()">Cancel</button>
+         <button class="primary" onclick="confirmLoadSearch()" ${state.searchSelections.length?"":"disabled"}>Confirm Search · 1 hr (${state.searchSelections.length})</button>`
+      : "";
+  }
+
+  if(!state.started){
+    w.innerHTML=`<div class="small">Start a game to populate regional freight.</div>`;
+    return;
+  }
+
+  w.innerHTML=MARKET_REGIONS.map(region=>{
+    const cards=state.regionMarkets[region]||[];
+    return `<section class="region-board">
+      <h3>${region}<span class="region-count">${cards.length} loads</span></h3>
+      <div class="region-cards">
+        ${cards.map(l=>{
+          const selected=state.searchSelections.includes(l.id);
+          const expanded=state.expandedLoadId===l.id;
+          return `<div class="compact-load ${selected?"selected":""} ${expanded?"expanded":""}" onclick="toggleLoadCard('${l.id}')">
+            <div class="compact-load-main">
+              <div class="freight-inline">
+                <span class="lane">${esc(l.origin)} → ${esc(l.destination)}</span>
+                <button class="route-mini" onclick="event.stopPropagation();previewLoadRoute('${l.id}')">${state.routePreview&&state.routePreview.loadId===l.id?"Hide Route":"Route"}</button>
+                <span class="quick-stat">${l.miles||l.segments*50} mi</span>
+                <span class="quick-stat">${l.reward} REP</span>
+                ${state.searchMode?`<span class="search-check">${selected?"☑":"☐"}</span>`:""}
+              </div>
+            </div>
+            <div class="compact-load-detail" onclick="event.stopPropagation()">
+              <div class="detail-route">${esc(l.origin)} → ${esc(l.destination)}</div>
+              <div class="detail-meta">
+                ${esc(l.commodity)}<br>
+                ${esc(l.equipment)} · ${l.miles||l.segments*50} miles · ${l.reward} REP
+              </div>
+              <div class="detail-actions">
+                <button onclick="event.stopPropagation();previewLoadRoute('${l.id}')">${state.routePreview&&state.routePreview.loadId===l.id?"🗺 Hide Route":"🗺 Route"}</button>
+                <button class="primary" onclick="event.stopPropagation();bookLoad('${l.id}')" ${(state.searchMode||state.players[state.current].booked.length>=3)?"disabled":""}>Book</button>
+              </div>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+    </section>`;
+  }).join("") + (state.dropHooksEnabled?`
+    <section class="region-board dh-wide">
+      <h3>Drop & Hook Lanes <span class="region-count">${state.dhLanes.length} persistent lanes</span></h3>
+      <div class="dh-lanes">${state.dhLanes.length?state.dhLanes.map(l=>{
+        const available=dhTrailersAt(l.origin)>0;
+        return `<div class="dh-card ${available?"available":""}">
+          <div class="dh-title">${esc(l.origin)} → ${esc(l.destination)}</div>
+          <div class="dh-meta"><span class="dh-badge">D/H</span> ${l.miles} mi · ${l.reward} REP · ${dhTrailersAt(l.origin)} trailer(s) at pickup</div>
+          <button class="route-mini" onclick="previewLoadRoute('${l.id}')">${state.routePreview&&state.routePreview.loadId===l.id?"Hide Route":"Route"}</button>
+        </div>`;
+      }).join(""):`<div class="small">No Drop & Hook lanes revealed yet.</div>`}</div>
+    </section>`:"");
+}
+
+function renderBottomClock(){
+  const el=document.getElementById("bottomClock");
+  if(!el) return;
+  let out=`<div class="bottom-clock-icon" title="48-hour time track">🕒</div><div class="bottom-clock-track"></div>`;
+  for(let h=0;h<=48;h+=3){
+    const pct=(h/48)*100,major=h%12===0;
+    out+=`<div class="bottom-clock-tick ${major?"major":""}" style="left:${pct}%"></div>`;
+    if(major) out+=`<div class="bottom-clock-label" style="left:${pct}%">${h}</div>`;
+  }
+  if(state.started){
+    state.players.forEach((p,i)=>{
+      const pct=(mod48(p.time)/48)*100;
+      out+=`<div class="bottom-clock-player" style="left:${pct}%;background:${p.color}">${i+1}</div>`;
+    });
+  }
+  el.innerHTML=out;
+}
+function renderTop() {
+  if(!state.started) {
+    document.getElementById("topstats").innerHTML=`<button class="primary" onclick="setup()">New Game</button>`;
+    return;
+  }
+  const p=state.players[state.current];
+  document.getElementById("topstats").innerHTML=`<span class="stat">Current <b style="color:${p.color}">${esc(p.name)}</b></span>
+    <span class="stat">Clock <b>${timeLabel(p.time)}</b></span>
+    <span class="stat">REP <b>${p.reputation}</b></span>
+    <button onclick="setup()">Restart</button>`;
+}
+
+let lastTurnPlayerIndex = null;
+let turnOverlayTimer = null;
+
+function parseInterstateNumber(hwy){
+  if(!hwy) return "";
+  const m=String(hwy).match(/I-(\d{1,3})/);
+  return m?m[1]:"";
+}
+function routeMidpoint(a,b,f=0.5){
+  const A=xy(a),B=xy(b);
+  return [A[0]+(B[0]-A[0])*f,A[1]+(B[1]-A[1])*f];
+}
+function playerWhereText(p){
+  if(p.position && p.position.type==="route"){
+    return `${p.position.to} bound · ${p.position.progress}/${p.position.total} hours`;
+  }
+  if(p.position && p.position.type==="city") return p.position.city;
+  if(p.city) return p.city;
+  return "On the road";
+}
+
+function turnReminder(p){
+  if(p.dhActive) return `En route to ${p.dhActive.destination}`;
+  if(p.active) return `En route to ${p.active.destination}`;
+  if(p.booked.length===1) return `Pick up in ${p.booked[0].origin}`;
+  if(p.booked.length>1) return "Deciding on next pickup";
+  return "Available";
+}
+function showTurnOverlay(){
+  if(!state.started||!state.justChangedTurn) return;
+  const p=state.players[state.current];
+  const overlay=document.getElementById("turnOverlay"), card=document.getElementById("turnCard");
+  if(!overlay||!card) return;
+  card.style.borderColor=p.color;
+  card.innerHTML=`<div class="who" style="color:${p.color}">${esc(p.name.toUpperCase())}'S TURN!</div>
+    <div class="turn-reminder">${esc(turnReminder(p))}</div>
+    <div class="where">${esc(playerWhereText(p))}<br>🕒 ${remainingDrive(p)} driving hours remaining</div>`;
+  overlay.style.display="flex";
+  clearTimeout(turnOverlayTimer);
+  turnOverlayTimer=setTimeout(()=>hideTurnOverlay(),1600);
+}
+function hideTurnOverlay(){
+  const overlay=document.getElementById("turnOverlay");
+  if(overlay) overlay.style.display="none";
+}
+
+function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+
+function applyMapView(){
+  const svg=document.getElementById("map");
+  if(!svg) return;
+  const v=state.mapView;
+  v.w=clamp(v.w,220,900); v.h=clamp(v.h,147,600);
+  v.x=clamp(v.x,0,900-v.w); v.y=clamp(v.y,0,600-v.h);
+  svg.setAttribute("viewBox",`${v.x} ${v.y} ${v.w} ${v.h}`); scheduleRegisteredOverlay();
+}
+function fitMap(){
+  state.mapView={x:0,y:0,w:900,h:600};
+  applyMapView();
+}
+function zoomMap(factor, centerX=null, centerY=null){
+  const v=state.mapView;
+  const cx=centerX===null?v.x+v.w/2:centerX;
+  const cy=centerY===null?v.y+v.h/2:centerY;
+  const nw=clamp(v.w/factor,220,900);
+  const nh=nw*(600/900);
+  state.mapView={x:cx-nw/2,y:cy-nh/2,w:nw,h:nh};
+  applyMapView();
+}
+function screenToSvg(clientX,clientY){
+  const svg=document.getElementById("map");
+  const rect=svg.getBoundingClientRect();
+  const v=state.mapView;
+  return [v.x+(clientX-rect.left)/rect.width*v.w, v.y+(clientY-rect.top)/rect.height*v.h];
+}
+function centerOnCurrentPlayer(){
+  if(!state.started) return;
+  const q=truckXY(state.players[state.current]);
+  const v=state.mapView;
+  state.mapView={x:q[0]-v.w/2,y:q[1]-v.h/2,w:v.w,h:v.h};
+  applyMapView();
+}
+function initMapGestures(){
+  const svg=document.getElementById("map");
+  if(!svg || svg.dataset.gestures==="1") return;
+  svg.dataset.gestures="1";
+
+  svg.addEventListener("wheel",e=>{
+    e.preventDefault();
+    const q=screenToSvg(e.clientX,e.clientY);
+    zoomMap(e.deltaY<0?1.18:0.85,q[0],q[1]);
+  },{passive:false});
+
+  let lastSingle=null;
+  let lastPinch=null;
+
+  svg.addEventListener("pointerdown",e=>{
+    svg.setPointerCapture(e.pointerId);
+    state.panPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(state.panPointers.size===1) lastSingle={x:e.clientX,y:e.clientY};
+    if(state.panPointers.size===2){
+      const pts=[...state.panPointers.values()];
+      lastPinch=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+      lastSingle=null;
+    }
+  });
+
+  svg.addEventListener("pointermove",e=>{
+    if(!state.panPointers.has(e.pointerId)) return;
+    state.panPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+
+    if(state.panPointers.size===1 && lastSingle){
+      const rect=svg.getBoundingClientRect(), v=state.mapView;
+      const dx=(e.clientX-lastSingle.x)/rect.width*v.w;
+      const dy=(e.clientY-lastSingle.y)/rect.height*v.h;
+      state.mapView={x:v.x-dx,y:v.y-dy,w:v.w,h:v.h};
+      lastSingle={x:e.clientX,y:e.clientY};
+      applyMapView();
+    } else if(state.panPointers.size===2){
+      const pts=[...state.panPointers.values()];
+      const d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+      if(lastPinch && d>0){
+        const midX=(pts[0].x+pts[1].x)/2, midY=(pts[0].y+pts[1].y)/2;
+        const q=screenToSvg(midX,midY);
+        zoomMap(d/lastPinch,q[0],q[1]);
+      }
+      lastPinch=d;
+    }
+  });
+
+  const endPointer=e=>{
+    state.panPointers.delete(e.pointerId);
+    if(state.panPointers.size===1){
+      const p=[...state.panPointers.values()][0];
+      lastSingle={x:p.x,y:p.y};
+      lastPinch=null;
+    } else if(state.panPointers.size===0){
+      lastSingle=null; lastPinch=null;
+    }
+  };
+  svg.addEventListener("pointerup",endPointer);
+  svg.addEventListener("pointercancel",endPointer);
+}
+
+function perimeterPoint(hour,offset=0){
+  const x0=22+offset,y0=22+offset,x1=878-offset,y1=578-offset;
+  const w=x1-x0,h=y1-y0,per=2*(w+h);
+  let d=(mod48(hour)/48)*per;
+  if(d<=w) return {x:x0+d,y:y0,side:"top"};
+  d-=w;
+  if(d<=h) return {x:x1,y:y0+d,side:"right"};
+  d-=h;
+  if(d<=w) return {x:x1-d,y:y1,side:"bottom"};
+  d-=w;
+  return {x:x0,y:y1-d,side:"left"};
+}
+function renderClock(){ renderBottomClock(); }
+
+
+function cityLabelSpec(name){
+  if(name==="Dallas") return {dx:12,dy:-12,anchor:"start"};
+  if(name==="Fort Worth") return {dx:-12,dy:15,anchor:"end"};
+  if(name==="Mesa") return {dx:12,dy:15,anchor:"start"};
+  if(name==="Phoenix") return {dx:-12,dy:-10,anchor:"end"};
+  return {dx:12,dy:4,anchor:"start"};
+}
+
+function currentPositionKey(p){
+  const q=p.position;
+  if(q.type==="city") return `C|${q.city}`;
+  return `R|${q.from}|${q.to}|${q.progress}|${q.total}`;
+}
+
+function routeSegmentsExpanded(){
+  const nodes=new Map(), adj=new Map();
+  const addNode=(id,obj)=>{if(!nodes.has(id))nodes.set(id,obj);if(!adj.has(id))adj.set(id,[])};
+  const link=(a,b)=>{
+    if(!adj.has(a)) adj.set(a,[]);
+    if(!adj.has(b)) adj.set(b,[]);
+    if(!adj.get(a).includes(b)) adj.get(a).push(b);
+    if(!adj.get(b).includes(a)) adj.get(b).push(a);
+  };
+
+  Object.keys(DATA.coords).forEach(city=>addNode(`C|${city}`,{id:`C|${city}`,type:"city",city}));
+
+  for(const r of DATA.edges){
+    const seq=[`C|${r.a}`];
+    for(let i=1;i<r.segments;i++){
+      const id=`S|${r.a}|${r.b}|${i}|${r.segments}`;
+      addNode(id,{id,type:"segment",a:r.a,b:r.b,index:i,total:r.segments});
+      seq.push(id);
+    }
+    seq.push(`C|${r.b}`);
+    for(let i=0;i<seq.length-1;i++) link(seq[i],seq[i+1]);
+  }
+
+  // All Interstate routes meeting at the same city/junction share the same C|city node above.
+  // Therefore arriving at a junction exposes every connected highway during the same Drive action.
+  return {nodes,adj};
+}
+
+function resolveCurrentGraphNode(p,graph){
+  const q=p.position;
+  if(q.type==="city") return `C|${q.city}`;
+  // Match exact route orientation first; if unavailable, reverse orientation.
+  let id=`S|${q.from}|${q.to}|${q.progress}|${q.total}`;
+  if(graph.nodes.has(id)) return id;
+  id=`S|${q.to}|${q.from}|${q.total-q.progress}|${q.total}`;
+  return graph.nodes.has(id)?id:null;
+}
+
+function reachableNodesForCurrentPlayer(){
+  const p=state.players[state.current];
+  const max=remainingDrive(p);
+  const graph=routeSegmentsExpanded();
+  const start=resolveCurrentGraphNode(p,graph);
+  const dist=new Map();
+  if(!start) return {graph,dist,start:null};
+  dist.set(start,0);
+  const q=[start];
+  while(q.length){
+    const u=q.shift(),d=dist.get(u);
+    if(d>=max) continue;
+    for(const v of graph.adj.get(u)||[]){
+      if(!dist.has(v)){
+        dist.set(v,d+1);
+        q.push(v);
+      }
+    }
+  }
+  return {graph,dist,start};
+}
+
+function graphNodePoint(node){
+  if(node.type==="city") return xy(node.city);
+  return routePoint(node.a,node.b,node.index,node.total);
+}
+
+function graphNodeLabel(node){
+  if(node.type==="city") return node.city;
+  return `${node.a}–${node.b} segment ${node.index}`;
+}
+
+function driveToGraphNode(nodeId){
+  if(!state.driveMode) return;
+  const p=state.players[state.current];
+  const {graph,dist}=reachableNodesForCurrentPlayer();
+  if(!dist.has(nodeId) || dist.get(nodeId)===0) return;
+  const hours=dist.get(nodeId);
+  if(hours>remainingDrive(p)) return;
+
+  const node=graph.nodes.get(nodeId);
+  createUndo(`Drive ${hours*50} miles`);
+  spend(p,hours,"drive");
+
+  if(node.type==="city"){
+    p.position={type:"city",city:node.city};
+  }else{
+    // Preserve a canonical route orientation from the node itself.
+    p.position={type:"route",from:node.a,to:node.b,total:node.total,progress:node.index};
+  }
+
+  state.driveMode=false;
+  nextPlayer();
+  render();
+}
+
+function truckStopAtPoint(node){
+  if(!DATA.truckStops || node.type!=="segment") return false;
+  const pt=graphNodePoint(node);
+  return DATA.truckStops.some(ts=>{
+    const q=routeMidpoint(ts.route[0],ts.route[1],ts.fraction);
+    return Math.hypot(pt[0]-q[0],pt[1]-q[1])<10;
+  });
+}
+
+function renderPlayerStatus(){
+  const box=document.getElementById("playerStatusList");
+  const goal=document.getElementById("goalRepValue");
+  if(goal) goal.textContent=(state.repTarget||25)+" REP";
+  if(!box) return;
+  if(!state.started){
+    box.innerHTML=`<div class="small">Start a game.</div>`;
+    return;
+  }
+  box.innerHTML=state.players.map((p,i)=>{
+    const completed=(p.completed||[]).length;
+    return `<div class="player-status ${i===state.current?"active":""}" style="border-left-color:${p.color}">
+      <div class="row">
+        <span class="ps-name" style="color:${p.color}">${esc(p.name)}</span>
+        <b>${p.reputation}/${state.repTarget} REP</b>
+      </div>
+      <div class="ps-grid">
+        <span>Completed loads</span><b>${completed}</b>
+        <span>Total elapsed time</span><b>${hoursLabel(p.time)}h</b>
+        <span class="ps-location">📍 ${esc(positionLabel(p))}</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function mapToOverlay(x,y){
+  const v=state.mapView||{x:0,y:0,w:900,h:600};
+  return [(x-v.x)/v.w*900,(y-v.y)/v.h*600];
+}
+function renderMapLabels(){ renderHtmlLabels(); }
+
+
+function shortestCityPath(origin,destination){
+  const adj={};
+  DATA.edges.forEach(e=>{
+    (adj[e.a]||(adj[e.a]=[])).push({to:e.b,w:e.segments,edge:e});
+    (adj[e.b]||(adj[e.b]=[])).push({to:e.a,w:e.segments,edge:e});
+  });
+  const dist={[origin]:0},prev={},used=new Set();
+  while(true){
+    let u=null,best=Infinity;
+    for(const k of Object.keys(dist)) if(!used.has(k)&&dist[k]<best){u=k;best=dist[k]}
+    if(u===null||u===destination) break;
+    used.add(u);
+    for(const n of adj[u]||[]){
+      const nd=best+n.w;
+      if(nd<(dist[n.to]??Infinity)){
+        dist[n.to]=nd;
+        prev[n.to]={city:u,edge:n.edge};
+      }
+    }
+  }
+  if(!(destination in dist)) return null;
+  const edges=[];
+  let cur=destination;
+  while(cur!==origin){
+    const p=prev[cur];
+    if(!p) return null;
+    edges.push(p.edge);
+    cur=p.city;
+  }
+  edges.reverse();
+  return {edges,hours:dist[destination],miles:dist[destination]*50};
+}
+
+function previewLoadRoute(loadId){
+  if(state.routePreview && state.routePreview.loadId===loadId){
+    state.routePreview=null;
+    render();
+    return;
+  }
+  let load=state.market.find(l=>l.id===loadId);
+  if(!load && state.started){
+    for(const p of state.players){
+      load=p.booked.find(l=>l.id===loadId) || (p.active&&p.active.id===loadId?p.active:null) || (p.completed||[]).find(l=>l.id===loadId);
+      if(load) break;
+    }
+  }
+  if(!load) return;
+  const sp=shortestCityPath(load.origin,load.destination);
+  state.routePreview=sp?{loadId,origin:load.origin,destination:load.destination,edges:sp.edges,hours:sp.hours,miles:sp.miles}:null;
+  render();
+}
+
+function clearRoutePreview(){
+  state.routePreview=null;
+  render();
+}
+
+function mapPointToOverlayPixels(x,y){
+  const map=document.getElementById("map");
+  const labels=document.getElementById("mapLabels");
+  if(!map||!labels) return [0,0];
+  const rect=map.getBoundingClientRect();
+  const v=state.mapView||{x:0,y:0,w:900,h:600};
+  const px=(x-v.x)/v.w*rect.width;
+  const py=(y-v.y)/v.h*rect.height;
+  return [px,py,rect.width,rect.height];
+}
+
+function ensureLabelOverlayPixelSpace(){
+  const labels=document.getElementById("mapLabels");
+  const map=document.getElementById("map");
+  if(!labels||!map) return;
+  const r=map.getBoundingClientRect();
+  labels.setAttribute("viewBox",`0 0 ${Math.max(1,r.width)} ${Math.max(1,r.height)}`);
+}
+
+function interstateLabelPoints(){
+  // Label each Interstate only a few times based on all segments carrying the same primary I-number.
+  const groups={};
+  DATA.edges.forEach(e=>{
+    const n=parseInterstateNumber(e.highway);
+    if(!n) return;
+    (groups[n]||(groups[n]=[])).push(e);
+  });
+  const pts=[];
+  Object.entries(groups).forEach(([num,arr])=>{
+    const maxLabels=arr.length>=8?3:arr.length>=4?2:1;
+    for(let k=0;k<maxLabels;k++){
+      const idx=Math.round((k+1)*(arr.length-1)/(maxLabels+1));
+      const e=arr[idx];
+      const q=routeMidpoint(e.a,e.b,.5);
+      pts.push({num,q});
+    }
+  });
+  return pts;
+}
+
+function driveNodeDescription(node,hours){
+  if(node.type==="city") return node.city;
+  // Describe intermediate node relative to nearest endpoint.
+  const toA=node.index;
+  const toB=node.total-node.index;
+  if(toA<=toB) return `${node.a} area on Interstate`;
+  return `${node.b} area on Interstate`;
+}
+
+function requestDriveToGraphNode(nodeId){
+  if(!state.driveMode) return;
+  const p=state.players[state.current];
+  const {graph,dist}=reachableNodesForCurrentPlayer();
+  if(!dist.has(nodeId)||dist.get(nodeId)<=0) return;
+  const hours=dist.get(nodeId);
+  const node=graph.nodes.get(nodeId);
+  const miles=hours*50;
+  const label=driveNodeDescription(node,hours);
+  openModal(`<h3>Confirm Drive</h3>
+    <p>Drive <b>${miles} miles</b> to <b>${esc(label)}</b>?</p>
+    <p class="small">${hours} driving hour${hours===1?"":"s"}.</p>
+    <div class="row">
+      <button onclick="closeModal()">No</button>
+      <button class="primary" onclick="confirmDriveToGraphNode('${nodeId}')">Yes</button>
+    </div>`);
+}
+
+function confirmDriveToGraphNode(nodeId){
+  const p=state.players[state.current];
+  const {graph,dist}=reachableNodesForCurrentPlayer();
+  if(!dist.has(nodeId)||dist.get(nodeId)<=0){closeModal();return;}
+  const hours=dist.get(nodeId);
+  if(hours>remainingDrive(p)){closeModal();return;}
+  const node=graph.nodes.get(nodeId);
+  createUndo(`Drive ${hours*50} miles`);
+  spend(p,hours,"drive");
+  if(node.type==="city") p.position={type:"city",city:node.city};
+  else p.position={type:"route",from:node.a,to:node.b,total:node.total,progress:node.index};
+  state.driveMode=false;
+  closeModal();
+  nextPlayer();
+  render();
+}
+
+function mapToScreenPercent(x,y){
+  const v=state.mapView||{x:0,y:0,w:900,h:600};
+  return [((x-v.x)/v.w)*100,((y-v.y)/v.h)*100];
+}
+function renderHtmlLabels(){
+  const layer=document.getElementById("htmlLabels");
+  if(!layer) return;
+  const p=state.started?state.players[state.current]:null;
+  const city=p?playerCity(p):null;
+  let out="";
+  for(const name of Object.keys(DATA.coords)){
+    const q=xy(name),pc=mapToScreenPercent(q[0],q[1]);
+    if(pc[0]<-10||pc[0]>110||pc[1]<-10||pc[1]>110) continue;
+    out+=`<div class="map-html-label city-region ${regionClassName(regionForCity(name))} ${city===name?"active":""}" title="${esc(name)} · ${esc(regionForCity(name))}" style="left:${pc[0]}%;top:${pc[1]}%">${esc(name)}</div>`;
+  }
+  interstateLabelPoints().forEach(it=>{
+    const pc=mapToScreenPercent(it.q[0],it.q[1]);
+    if(pc[0]<-5||pc[0]>105||pc[1]<-5||pc[1]>105) return;
+    out+=`<div class="map-html-label shield" style="left:${pc[0]}%;top:${pc[1]}%"><span>${it.num}</span></div>`;
+  });
+  if(DATA.truckStops){
+    for(const ts of DATA.truckStops){
+      const q=routeMidpoint(ts.route[0],ts.route[1],ts.fraction),pc=mapToScreenPercent(q[0],q[1]);
+      if(pc[0]<-10||pc[0]>110||pc[1]<-10||pc[1]>110) continue;
+      out+=`<div class="map-html-label truckstop" style="left:${pc[0]}%;top:${pc[1]}%">${esc(ts.name)}</div>`;
+    }
+  }
+  if(state.started){
+    state.players.forEach((pl,i)=>{
+      const q=truckXY(pl),pc=mapToScreenPercent(q[0],q[1]);
+      out+=`<div class="map-html-label player ${i===state.current?"active":""}" style="left:${pc[0]}%;top:calc(${pc[1]}% - 22px);color:${pl.color}">P${i+1}</div>`;
+    });
+  }
+  layer.innerHTML=out;
+}
+function renderDriveHitLayer(){
+  const svg=document.getElementById("driveHitSvg");
+  const wrap=document.getElementById("driveHitLayer");
+  if(!svg||!wrap) return;
+  if(!state.started||!state.driveMode){svg.innerHTML="";wrap.style.pointerEvents="none";return;}
+  wrap.style.pointerEvents="auto";
+  const reachable=reachableNodesForCurrentPlayer();
+  let out="";
+  reachable.dist.forEach((hours,nodeId)=>{
+    if(hours<=0) return;
+    const node=reachable.graph.nodes.get(nodeId);
+    const q=graphNodePoint(node),pc=mapToScreenPercent(q[0],q[1]);
+    const x=pc[0]*9,y=pc[1]*6;
+    out+=`<circle cx="${x}" cy="${y}" r="8" class="drive-hit-ring"/>`;
+    out+=`<circle cx="${x}" cy="${y}" r="18" class="drive-hit" data-node="${nodeId}"/>`;
+  });
+  svg.innerHTML=out;
+  svg.querySelectorAll(".drive-hit").forEach(el=>{
+    el.addEventListener("click",e=>{
+      e.stopPropagation();
+      requestDriveToGraphNode(el.getAttribute("data-node"));
+    });
+  });
+}
+
+function renderWorldOverlay(){
+  const layer=document.getElementById("worldOverlay");
+  if(!layer) return;
+  let out="";
+  const reachable=(state.started&&state.driveMode)?reachableNodesForCurrentPlayer():null;
+
+  // 1-hour / 50-mile spaces: always visible, always constant screen size.
+  for(const r of DATA.edges){
+    for(let i=1;i<r.segments;i++){
+      const nodeId=`S|${r.a}|${r.b}|${i}|${r.segments}`;
+      const q=routePoint(r.a,r.b,i,r.segments),pc=mapToScreenPercent(q[0],q[1]);
+      if(pc[0]<-4||pc[0]>104||pc[1]<-4||pc[1]>104) continue;
+      const node={type:"segment",a:r.a,b:r.b,index:i,total:r.segments};
+      const stop=truckStopAtPoint(node);
+      const can=reachable&&reachable.dist.has(nodeId)&&reachable.dist.get(nodeId)>0;
+      out+=`<div class="screen-object screen-node ${stop?"truckstop":""} ${can?"reachable":""}" style="left:${pc[0]}%;top:${pc[1]}%"></div>`;
+      if(can) out+=`<div class="screen-hit" style="left:${pc[0]}%;top:${pc[1]}%" data-node="${nodeId}"></div>`;
+    }
+  }
+
+  // Cities: also screen-space objects.
+  for(const name of Object.keys(DATA.coords)){
+    const q=xy(name),pc=mapToScreenPercent(q[0],q[1]);
+    if(pc[0]<-4||pc[0]>104||pc[1]<-4||pc[1]>104) continue;
+    const nodeId=`C|${name}`;
+    const can=reachable&&reachable.dist.has(nodeId)&&reachable.dist.get(nodeId)>0;
+    out+=`<div class="screen-object screen-city ${can?"reachable":""}" style="left:${pc[0]}%;top:${pc[1]}%"></div>`;
+    if(can) out+=`<div class="screen-hit" style="left:${pc[0]}%;top:${pc[1]}%" data-node="${nodeId}"></div>`;
+  }
+
+  // Player trucks: constant screen size.
+  if(state.started){
+    state.players.forEach((pl,i)=>{
+      const q=truckXY(pl),pc=mapToScreenPercent(q[0],q[1]);
+      const xoff=(i-(state.players.length-1)/2)*8;
+      out+=`<div class="screen-object screen-truck" style="left:calc(${pc[0]}% + ${xoff}px);top:calc(${pc[1]}% - 15px);background:${pl.color};${i===state.current?"box-shadow:0 0 0 4px rgba(255,255,255,.25),0 1px 4px rgba(0,0,0,.55)":""}"></div>`;
+    });
+  }
+
+  layer.innerHTML=out;
+  layer.querySelectorAll(".screen-hit").forEach(el=>{
+    el.addEventListener("click",e=>{
+      e.preventDefault(); e.stopPropagation();
+      requestDriveToGraphNode(el.dataset.node);
+    });
+  });
+}
+
+
+function equipmentHtml(p){
+  const load=p.active, city=playerCity(p);
+  const personalHere=personalTrailerWithPlayer(p);
+  const trailerState=p.dhActive
+    ? `<div class="eq-icon">▰</div><div class="eq-label">D/H TRAILER</div><div class="trailer-load">${esc(p.dhActive.origin)} → <b>${esc(p.dhActive.destination)}</b></div>`
+    : personalHere
+      ? `<div class="eq-icon">▰</div><div class="eq-label">PERSONAL TRAILER</div>${load?`<div class="trailer-load">${esc(load.origin)} → <b>${esc(load.destination)}</b><br>${esc(load.commodity)}</div>`:`<div class="trailer-load trailer-empty">EMPTY</div>`}`
+      : `<div class="eq-icon">—</div><div class="eq-label">BOBTAIL</div><div class="eq-status">Personal trailer: ${esc(p.personalTrailerLocation||"—")}</div>`;
+  return `<div class="equipment-board">
+    <div class="equipment-title">Equipment ${state.dropHooksEnabled?`<span class="module-chip">Drop & Hooks ON</span>`:""}</div>
+    <div class="equipment-chain">
+      <div class="eq-slot"><div class="eq-icon">🚛</div><div class="eq-label">TRACTOR</div></div>
+      <div class="rig-arrow">→</div>
+      <div class="eq-slot ${!personalHere&&!p.dhActive?"disconnected":""}">${trailerState}</div>
+    </div>
+    <div class="module-strip">
+      <div class="module-disabled">⛽ Fuel<br>Module Off</div>
+      <div class="module-disabled">🔧 Wrench<br>Module Off</div>
+      <div class="module-disabled">★ Badge<br>Module Off</div>
+    </div>
+  </div>`;
+}
+
+
+function worldToPanelPixels(x,y){
+  const svg=document.getElementById("map");
+  const panel=svg.closest(".mapwrap");
+  if(!svg||!panel) return [0,0];
+  const pt=svg.createSVGPoint(); pt.x=x; pt.y=y;
+  const ctm=svg.getScreenCTM(); if(!ctm) return [0,0];
+  const sp=pt.matrixTransform(ctm), pr=panel.getBoundingClientRect();
+  return [sp.x-pr.left, sp.y-pr.top];
+}
+
+function regionClassName(region){return "region-"+region.toLowerCase().replace(/\s+/g,"-")}
+function regionForCity(city){return DATA.cityMarkets?.[city]||""}
+function toggleRegions(){}
+function renderRegionOverlay(){}
+
+function renderRegisteredMapOverlay(){
+  const objectLayer=document.getElementById("worldOverlay");
+  const labelLayer=document.getElementById("htmlLabels");
+  if(!objectLayer||!labelLayer) return;
+  const p=state.started?state.players[state.current]:null;
+  const currentCity=p?playerCity(p):null;
+  const reachable=(state.started&&state.driveMode)?reachableNodesForCurrentPlayer():null;
+  let objects="",labels="";
+  for(const r of DATA.edges){
+    for(let i=1;i<r.segments;i++){
+      const nodeId=`S|${r.a}|${r.b}|${i}|${r.segments}`;
+      const q=routePoint(r.a,r.b,i,r.segments),pt=worldToPanelPixels(q[0],q[1]);
+      const node={type:"segment",a:r.a,b:r.b,index:i,total:r.segments};
+      const stop=truckStopAtPoint(node),can=reachable&&reachable.dist.has(nodeId)&&reachable.dist.get(nodeId)>0;
+      objects+=`<div class="screen-object screen-node ${stop?"truckstop":""} ${can?"reachable":""}" style="left:${pt[0]}px;top:${pt[1]}px"></div>`;
+      if(can) objects+=`<div class="screen-hit" style="left:${pt[0]}px;top:${pt[1]}px" data-node="${nodeId}"></div>`;
+    }
+  }
+  for(const name of Object.keys(DATA.coords)){
+    const q=xy(name),pt=worldToPanelPixels(q[0],q[1]),nodeId=`C|${name}`;
+    const can=reachable&&reachable.dist.has(nodeId)&&reachable.dist.get(nodeId)>0;
+    objects+=`<div class="screen-object screen-city ${can?"reachable":""}" style="left:${pt[0]}px;top:${pt[1]}px"></div>`;
+    if(can) objects+=`<div class="screen-hit" style="left:${pt[0]}px;top:${pt[1]}px" data-node="${nodeId}"></div>`;
+    labels+=`<div class="map-html-label city-region ${regionClassName(regionForCity(name))} ${currentCity===name?"active":""}" title="${esc(name)} · ${esc(regionForCity(name))}" style="left:${pt[0]}px;top:${pt[1]-16}px">${esc(name)}</div>`;
+  }
+  if(DATA.truckStops) for(const ts of DATA.truckStops){
+    const q=routeMidpoint(ts.route[0],ts.route[1],ts.fraction),pt=worldToPanelPixels(q[0],q[1]);
+    labels+=`<div class="map-html-label truckstop" style="left:${pt[0]}px;top:${pt[1]-14}px">${esc(ts.name)}</div>`;
+  }
+  interstateLabelPoints().forEach(it=>{
+    const pt=worldToPanelPixels(it.q[0],it.q[1]);
+    labels+=`<div class="map-html-label shield" style="left:${pt[0]}px;top:${pt[1]}px"><span>${it.num}</span></div>`;
+  });
+  if(state.started) state.players.forEach((pl,i)=>{
+    const q=truckXY(pl),pt=worldToPanelPixels(q[0],q[1]),off=(i-(state.players.length-1)/2)*9;
+    objects+=`<div class="tractor-trailer-marker" style="left:${pt[0]+off}px;top:${pt[1]-16}px;color:${pl.color};${i===state.current?"filter:drop-shadow(0 0 5px white)":""}">
+      <div class="cab" style="background:${pl.color}"></div><div class="trl" style="background:${pl.color}"></div>
+      <div class="wheel w1"></div><div class="wheel w2"></div>
+    </div><div class="player-marker-label" style="left:${pt[0]+off}px;top:${pt[1]-48}px">P${i+1}</div>`;
+  });
+
+  if(state.started&&state.dropHooksEnabled){
+    for(const [cityName,count] of Object.entries(state.dhTrailerPool||{})){
+      if(count<=0||!DATA.coords[cityName])continue;
+      const q=xy(cityName),pt=worldToPanelPixels(q[0],q[1]);
+      objects+=`<div class="trailer-map-icon" title="${count} D/H trailer(s)" style="left:${pt[0]+22}px;top:${pt[1]+18}px">▰ ${count}</div>`;
+    }
+    state.players.forEach((pl,i)=>{
+      const loc=pl.personalTrailerLocation;
+      if(!loc||!DATA.coords[loc]||personalTrailerWithPlayer(pl))return;
+      const q=xy(loc),pt=worldToPanelPixels(q[0],q[1]);
+      objects+=`<div class="personal-trailer-map" title="${esc(pl.name)} personal trailer" style="left:${pt[0]-22}px;top:${pt[1]+18}px;color:${pl.color}">P${i+1} ▰</div>`;
+    });
+  }
+  objectLayer.innerHTML=objects; labelLayer.innerHTML=labels;
+  objectLayer.querySelectorAll(".screen-hit").forEach(el=>el.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();requestDriveToGraphNode(el.dataset.node);}));
+}
+function scheduleRegisteredOverlay(){requestAnimationFrame(()=>{renderRegisteredMapOverlay();renderRegionOverlay();});}
+function renderMap(){
+  const svg=document.getElementById("map");
+  let out=`<rect width="900" height="600" fill="#182630"/>`;
+  for(const r of DATA.edges){
+    const [x1,y1]=xy(r.a),[x2,y2]=xy(r.b);
+    const preview=state.routePreview;
+    const onPreview=preview&&preview.edges.some(pe=>(pe.a===r.a&&pe.b===r.b)||(pe.a===r.b&&pe.b===r.a));
+    out+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#607184" stroke-width="6" class="${preview&&!onPreview?"route-preview-dim":""}"/>`;
+    if(onPreview) out+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="route-preview-line"/>`;
+  }
+  if(state.routePreview){
+    const a=xy(state.routePreview.origin),b=xy(state.routePreview.destination);
+    out+=`<circle cx="${a[0]}" cy="${a[1]}" r="14" class="preview-pickup"/><circle cx="${b[0]}" cy="${b[1]}" r="14" class="preview-delivery"/>`;
+  }
+  svg.innerHTML=out;
+  scheduleRegisteredOverlay();
+}
+
+function finalStandings(){
+  return state.players.map((p,i)=>({
+    index:i,name:p.name,color:p.color,rep:p.reputation,
+    completed:(p.completed||[]).length,time:p.time
+  })).sort((a,b)=>{
+    if(b.rep!==a.rep) return b.rep-a.rep;
+    if(b.completed!==a.completed) return b.completed-a.completed;
+    return a.time-b.time;
+  });
+}
+
+function checkGameEnd(){
+  if(state.finished) return;
+  if(!state.players.some(p=>p.reputation>=state.repTarget)) return;
+  state.finished=true;
+  state.driveMode=false;
+  state.routePreview=null;
+  clearUndo();
+  showGameOver();
+}
+
+function showGameOver(){
+  const overlay=document.getElementById("gameOverOverlay");
+  const card=document.getElementById("gameOverCard");
+  if(!overlay||!card) return;
+  const standings=finalStandings();
+  const top=standings[0];
+  const tied=standings.filter(x=>x.rep===top.rep && x.completed===top.completed && x.time===top.time);
+  const title=tied.length>1 ? "SHARED VICTORY!" : `${esc(top.name)} WINS!`;
+  card.innerHTML=`<div style="text-align:center">
+      <div class="gold-rig">🚛</div>
+      <h2 style="margin:4px 0;color:#e0bb55">${title}</h2>
+      <div class="small">Goal: ${state.repTarget} REP</div>
+    </div>
+    <div class="standings">
+      ${standings.map((x,i)=>`<div class="standing-row ${i===0?"winner":""}">
+        <div class="standing-place">${i===0?"🥇":i===1?"🥈":i===2?"🥉":"#"+(i+1)}</div>
+        <div><b style="color:${x.color}">${esc(x.name)}</b></div>
+        <div><b>${x.rep} REP</b><br><span class="small">${x.completed} loads</span></div>
+        <div class="small">${x.time}h elapsed</div>
+      </div>`).join("")}
+    </div>
+    <div class="row">
+      <button onclick="document.getElementById('gameOverOverlay').style.display='none'">View Final Board</button>
+      <button class="primary" onclick="document.getElementById('gameOverOverlay').style.display='none';setup()">New Game</button>
+    </div>`;
+  overlay.style.display="flex";
+}
+function render(){
+  renderTop();
+  renderMarket();
+  renderMap();
+  renderClock();
+  renderTabs();
+  renderPlayerStatus();
+  scheduleRegisteredOverlay();
+  initMapGestures();
+  applyMapView();
+
+  if(state.started && state.pendingTurnNotice){
+    const target=state.pendingTurnNotice.player;
+    state.pendingTurnNotice=null;
+    requestAnimationFrame(()=>{
+      state.current=target;
+      centerOnCurrentPlayer();
+      state.justChangedTurn=true;
+      showTurnOverlay();
+      state.justChangedTurn=false;
+    });
+  }else if(state.started&&state.justChangedTurn){
+    requestAnimationFrame(()=>{
+      centerOnCurrentPlayer();
+      showTurnOverlay();
+      state.justChangedTurn=false;
+    });
+  }
+}
+
+function showRules(){
+  openModal(`<h3>Big Rig V4.0 — Drop & Hooks Rules</h3>
+  <div class="small" style="line-height:1.55">
+  <p><b>Movement:</b> 1 node = 50 miles = 1 driving hour. A driver may drive up to 11 hours before taking a 10-hour reset.</p>
+  <p><b>Turns:</b> The player with the lowest absolute elapsed time is active.</p>
+  <p><b>Setup:</b> Player order is randomized. Each player starts in the pickup city from a random Load Card draw; duplicate starting cities are redrawn. Setup cards are returned before the Freight Market is populated.</p><p><b>Loads:</b> Freight is divided into six origin regions. Each region displays one load per player. Booking is free and immediately refills that region. A player may hold a maximum of 3 booked loads; an active load does not count against this limit.</p><p><b>Search:</b> Search Load Board costs 1 hour. The persistent regional board enters selection mode; select any number of visible cards across any regions, then confirm to replace them simultaneously.</p>
+  <p><b>Scoring:</b> Delivered loads earn REP. Each booked or active load left incomplete at game end costs 1 REP.</p>
+  </div><button class="primary" onclick="closeModal()">Close</button>`);
+}
+function setup(){
+  openModal(`<h3>New Big Rig Game</h3>
+    <div class="setup-grid">
+      <label>Players
+        <select id="playerCount">
+          ${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${n===2?"selected":""}>${n}</option>`).join("")}
+        </select>
+      </label>
+      <label>Game Length
+        <select id="repTarget">
+          ${[15,20,25,30,35,40].map(n=>`<option value="${n}" ${n===25?"selected":""}>${n} Reputation</option>`).join("")}
+        </select>
+      </label>
+    </div>
+    <p class="small">Player order and starting cities are assigned automatically from random Load Card pickup cities. Players cannot start in the same city.</p>
+    <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input id="dropHooksEnabled" type="checkbox" checked> <b>Drop & Hooks Module</b> — trailer positioning + live-load dwell die</label>
+    <div class="row" style="margin-top:14px">
+      <button onclick="closeModal()">Cancel</button>
+      <button class="primary" onclick="startGame()">START GAME</button>
+    </div>`);
+}
+function buildStartFields() {
+  const n=Number(document.getElementById("playerCount").value);
+  const cities=(DATA.freightCities||Object.keys(DATA.coords)).slice().sort();
+  document.getElementById("startFields").innerHTML=Array.from({length:n},(_,i)=>`<div class="start-assignment"><span>Player ${i+1}</span>
+    <select id="start${i}">${cities.map(c=>`<option>${esc(c)}</option>`).join("")}</select></div>`).join("");
+}
+window.addEventListener("resize",scheduleRegisteredOverlay);
+render();
+</script>
+<div style="padding:8px 12px;color:#8f9baa;font-size:11px;text-align:center">Booking is free. Searching the load boards costs 1 hour.</div>
+<div id="gameOverOverlay" class="game-over-overlay">
+  <div class="game-over-card" id="gameOverCard"></div>
+</div>
+
+</body>
+</html>
