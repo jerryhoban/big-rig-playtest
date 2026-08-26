@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Big Rig V2.5 — Drop & Hooks Playtest</title>
+<title>Big Rig V3.1 — Customers Playtest</title>
 <style>
 :root {
   --bg:#0e1116; --panel:#171c24; --panel2:#202733; --line:#303a49;
@@ -720,6 +720,9 @@ header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-
 .driver-dashboard-player{color:#080b0e!important}.dashboard-duty-summary{display:grid;gap:3px;min-width:220px;color:#080b0e;font-size:11px;font-weight:850;text-align:right}.dashboard-duty-summary b{font-weight:950}
 .v2-action-stack .action-btn{width:100%;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}.action-main{font-size:13px;font-weight:900}.action-cost{font-size:10px;font-weight:750;opacity:.82}
 .designer-credit{font-size:12px;font-weight:750;color:#c8d3df}
+/* V3 Customers module */
+.customer-hours{margin-top:5px;font-size:10px;font-weight:800;color:#dbe4ec;line-height:1.45}.open{color:#7ee49f}.closed{color:#ff9999}.customer-status-panel{margin:9px 0;padding:9px 10px;border-radius:8px;background:rgba(8,11,14,.66);border:1px solid rgba(255,255,255,.2);font-size:11px}.customer-status-panel strong{letter-spacing:.06em}.customer-status-panel button{margin-top:7px}.customer-status-panel hr{border:0;border-top:1px solid rgba(255,255,255,.16);margin:8px 0}.rest-choice{padding:10px;border:1px solid #44515e;border-radius:8px;background:#171d24;margin:8px 0}.rest-choice input[type=range]{width:100%}.rest-preview{font-size:12px;font-weight:850;margin:7px 0}.closed-choice{opacity:.55}
+.load-route-inline{display:inline-flex;align-items:flex-start;gap:6px;vertical-align:middle}.customer-city-block{display:inline-flex;flex-direction:column;line-height:1.15}.customer-time-under{margin-top:2px;color:#c6d0da;font-size:9px;font-weight:400!important;text-transform:none!important;white-space:nowrap}.load-route-arrow{padding-top:1px;color:#dbe4ec}.load-title .customer-time-under{font-size:10px}.detail-route .customer-time-under{font-size:10px}
 
 </style>
 </head>
@@ -741,10 +744,11 @@ header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-
     <section class="panel version-detail-panel">
       <h2>Version Detail</h2>
       <div class="version-detail-text">
-        <b>Big Rig V2.5 — Drop &amp; Hooks Playtest</b><br><br>
+        <b>Big Rig V3.1 — Customers Playtest</b><br><br>
         <b>Included Modules</b><br>
         Core Game<br>
-        Drop &amp; Hooks Module<br><br>
+        Drop &amp; Hooks Module<br>
+        Customers Module<br><br>
         <b>Core Map</b><br>
         Major Interstate network only<br>
         Gray node = 1 hour / ~50 miles<br>
@@ -813,6 +817,21 @@ function xy(name) {
   const c = DATA.coords[name] || [450,300];
   return [Number(c[0]), Number(c[1])];
 }
+function installDesMoinesJunction(){
+  DATA.coords["Des Moines"]=[543,190];DATA.cityMarkets["Des Moines"]="North Central";
+  const replaceRoutes=list=>{
+    const kept=list.filter(e=>!((e.a==="Minneapolis"&&e.b==="Kansas City")||(e.a==="Omaha"&&e.b==="Chicago")));
+    kept.push(
+      {a:"Minneapolis",b:"Des Moines",highway:"I-35",miles:244,segments:5},
+      {a:"Des Moines",b:"Kansas City",highway:"I-35",miles:196,segments:4},
+      {a:"Omaha",b:"Des Moines",highway:"I-80",miles:135,segments:3},
+      {a:"Des Moines",b:"Chicago",highway:"I-80",miles:335,segments:6}
+    );
+    return kept;
+  };
+  DATA.edges=replaceRoutes(DATA.edges);DATA.routes=replaceRoutes(DATA.routes);
+}
+installDesMoinesJunction();
 const COLORS = ["#4da3ff","#f36c6c","#67d39b","#c58cff","#ff9d4d","#f2b84b"];
 const state = {justChangedTurn:false,bookingsThisTurn:0,
   players: [],
@@ -824,6 +843,8 @@ const state = {justChangedTurn:false,bookingsThisTurn:0,
   sessionId: "",
   sessionStartedAt: "",
   gameLog: [],
+  customerHours: {},
+  customersEnabled: true,
   sharedDay: 1,
   dayTransitions: [],
   round: 1,
@@ -865,7 +886,30 @@ function timeLabelAmPm(t){
   const suffix=h<12?"AM":"PM",display=h%12||12;
   return `${display}:${String(m).padStart(2,"0")} ${suffix}`;
 }
-function hoursLabel(h){return Number.isInteger(h)?`${h}`:`${Math.floor(h)}½`}
+const CUSTOMER_SCHEDULES={standard:{name:"Standard",open:8,close:17},early:{name:"Early",open:6,close:14},late:{name:"Late",open:12,close:20}};
+function randomCustomerSchedule(){const r=Math.random();return r<.6?"standard":r<.8?"early":"late"}
+function initializeCustomerHours(){
+  state.customerHours={};
+  DATA.loads.forEach(l=>{state.customerHours[l.id]={pickup:randomCustomerSchedule(),delivery:randomCustomerSchedule()};});
+}
+function customerSchedule(load,kind){
+  if(!state.customersEnabled||!load||load.type==="DropHook")return {name:"24/7",open:0,close:24,always:true};
+  const key=state.customerHours?.[load.id]?.[kind]||"standard";
+  return CUSTOMER_SCHEDULES[key]||CUSTOMER_SCHEDULES.standard;
+}
+function scheduleLabel(s){return s.always?"24/7":`${timeLabelAmPm(s.open)}–${timeLabelAmPm(s.close)}`}
+function customerIsOpen(load,kind,time){const s=customerSchedule(load,kind);if(s.always)return true;const h=((time%24)+24)%24;return h>=s.open&&h<s.close}
+function hoursUntilCustomerOpens(load,kind,time){
+  const s=customerSchedule(load,kind);if(s.always||customerIsOpen(load,kind,time))return 0;
+  const h=((time%24)+24)%24;return h<s.open?s.open-h:24-h+s.open;
+}
+function customerHoursMarkup(load){
+  if(!state.customersEnabled)return "";
+  const pu=customerSchedule(load,"pickup"),del=customerSchedule(load,"delivery");
+  return `<div class="customer-hours"><span>Pickup: ${scheduleLabel(pu)}</span><br><span>Delivery: ${scheduleLabel(del)}</span></div>`;
+}
+function enabledModulesLabel(){const modules=["Core Game"];if(state.dropHooksEnabled)modules.push("Drop & Hooks Module");if(state.customersEnabled)modules.push("Customers Module");return modules.join("; ")}
+function hoursLabel(h){return Number.isInteger(h)?`${h}`:h<1?"½":`${Math.floor(h)}½`}
 function mod48(x){return ((x%48)+48)%48;}
 function distanceTo(a,b) {
   if(a===b) return 0;
@@ -943,6 +987,8 @@ function deepCloneGameState(){
     gameTime:state.gameTime,
     sharedDay:state.sharedDay,
     dayTransitions:state.dayTransitions,
+    customerHours:state.customerHours,
+    customersEnabled:state.customersEnabled,
     marketCycle:state.marketCycle,
     dhLanes:state.dhLanes,
     dhTrailerPool:state.dhTrailerPool,
@@ -967,6 +1013,8 @@ function undoLastAction(){
   state.gameTime=snap.gameTime;
   state.sharedDay=snap.sharedDay||1;
   state.dayTransitions=snap.dayTransitions||[];
+  state.customerHours=snap.customerHours||{};
+  state.customersEnabled=snap.customersEnabled!==false;
   state.marketCycle=snap.marketCycle;
   state.dhLanes=snap.dhLanes||[];
   state.dhTrailerPool=snap.dhTrailerPool||{};
@@ -993,7 +1041,7 @@ function makeSessionId(){
 function recordGameEvent(action,details={}){
   if(!state.sessionId)return;
   const p=state.players[state.current]||null;
-  state.gameLog.push({sequence:state.gameLog.length+1,recorded_at:new Date().toISOString(),session_id:state.sessionId,version:"Big Rig V2.5",day:state.sharedDay||1,player_number:p?state.current+1:"",player_name:p?p.name:"",player_elapsed_hours:p?elapsedTime(p):"",game_clock:p?timeLabel(p.time):"",action,...details});
+  state.gameLog.push({sequence:state.gameLog.length+1,recorded_at:new Date().toISOString(),session_id:state.sessionId,version:"Big Rig V3.1",day:state.sharedDay||1,player_number:p?state.current+1:"",player_name:p?p.name:"",player_elapsed_hours:p?elapsedTime(p):"",game_clock:p?timeLabel(p.time):"",action,...details});
 }
 function computedSharedDay(){
   if(!state.players.length) return 1;
@@ -1059,6 +1107,7 @@ function startGame(){
   const enteredNames=Array.from({length:n},(_,i)=>setupPlayerName(i));
   state.repTarget=Number(document.getElementById("repTarget").value);
   state.dropHooksEnabled=!!document.getElementById("dropHooksEnabled")?.checked;
+  state.customersEnabled=!!document.getElementById("customersEnabled")?.checked;
 
   // Randomize player order first.
   const order=shuffle(Array.from({length:n},(_,i)=>i));
@@ -1087,6 +1136,7 @@ function startGame(){
   }));
 
   state.deck=[];state.market=[];state.discard=[];
+  initializeCustomerHours();
   initRegionalFreight();
   state.current=0;state.started=true;state.finished=false;state.justChangedTurn=true;
   state.sharedDay=1;state.dayTransitions=[];
@@ -1094,7 +1144,7 @@ function startGame(){
   state.mapView={x:0,y:0,w:900,h:600};
   state.routePreview=null;state.searchMode=false;state.searchSelections=[];state.expandedLoadId=null;
   state.pendingTurnNotice={player:0,token:Date.now()+Math.random()};
-  recordGameEvent("game_started",{player_count:n,target_rep:state.repTarget,modules:state.dropHooksEnabled?"Core Game; Drop & Hooks Module":"Core Game"});
+  recordGameEvent("game_started",{player_count:n,target_rep:state.repTarget,modules:enabledModulesLabel()});
   clearUndo();
   const go=document.getElementById("gameOverOverlay");if(go)go.style.display="none";
   closeModal();
@@ -1151,7 +1201,7 @@ function bookLoad(id){
  if(state.finished)return;clearUndo();const p=state.players[state.current];
   if(p.booked.length>=3){openModal(`<h3>Booking Limit</h3><p>Maximum of 3 booked loads.</p><button class="primary" onclick="closeModal()">OK</button>`);return;}let rr=null,idx=-1,l=null;
  for(const r of MARKET_REGIONS){idx=(state.regionMarkets[r]||[]).findIndex(x=>x.id===id);if(idx>=0){rr=r;l=state.regionMarkets[r][idx];break}}
- if(!l)return;state.expandedLoadId=null;p.booked.push(l);state.regionMarkets[rr].splice(idx,1);refillRegion(rr);syncRegionalMarket();recordGameEvent("load_booked",{load_id:l.id,origin:l.origin,destination:l.destination,reward:l.reward});render()
+ if(!l)return;state.expandedLoadId=null;p.booked.push(l);state.regionMarkets[rr].splice(idx,1);refillRegion(rr);syncRegionalMarket();recordGameEvent("load_booked",{load_id:l.id,origin:l.origin,destination:l.destination,reward:l.reward,pickup_schedule:scheduleLabel(customerSchedule(l,"pickup")),delivery_schedule:scheduleLabel(customerSchedule(l,"delivery"))});render()
 }
 
 function cancelBookedLoad(id){
@@ -1372,6 +1422,8 @@ function bookedLiveLoadsHere(p){
   const c=playerCity(p);
   return c ? p.booked.filter(l=>l.origin===c) : [];
 }
+function openBookedLiveLoadsHere(p){return bookedLiveLoadsHere(p).filter(l=>customerIsOpen(l,"pickup",p.time))}
+function closedBookedLiveLoadsHere(p){return bookedLiveLoadsHere(p).filter(l=>!customerIsOpen(l,"pickup",p.time))}
 function availableDhLanesHere(p){
   const c=playerCity(p);
   if(!c||!state.dropHooksEnabled||dhTrailersAt(c)<=0) return [];
@@ -1379,7 +1431,8 @@ function availableDhLanesHere(p){
 }
 function pickupOptions(p){
   return {
-    live: bookedLiveLoadsHere(p),
+    live: openBookedLiveLoadsHere(p),
+    closedLive: closedBookedLiveLoadsHere(p),
     dh: availableDhLanesHere(p),
     reattach: !!(state.dropHooksEnabled && playerCity(p) && p.personalTrailerLocation===playerCity(p) && !personalTrailerWithPlayer(p) && !p.dhActive)
   };
@@ -1387,7 +1440,8 @@ function pickupOptions(p){
 function deliverOptions(p){
   const c=playerCity(p);
   return {
-    live: !!(p.active && c===p.active.destination),
+    live: !!(p.active && c===p.active.destination && customerIsOpen(p.active,"delivery",p.time)),
+    closedLive: !!(p.active && c===p.active.destination && !customerIsOpen(p.active,"delivery",p.time)),
     dh: !!(p.dhActive && c===p.dhActive.destination)
   };
 }
@@ -1401,6 +1455,9 @@ function pickupAction(){
     sections.push(`<div class="choice-section"><h4>Booked Live Loads</h4><div class="choice-list">${
       opts.live.map(l=>`<button onclick="doLoad('${l.id}')"><b>${esc(l.origin)} → ${esc(l.destination)}</b><br><span class="small">${esc(l.commodity)} · ${l.reward} REP</span></button>`).join("")
     }</div></div>`);
+  }
+  if(opts.closedLive.length){
+    sections.push(`<div class="choice-section closed-choice"><h4>Closed Customers</h4><div class="choice-list">${opts.closedLive.map(l=>`<button disabled><b>${esc(l.origin)} → ${esc(l.destination)}</b><br><span class="small">Pickup ${scheduleLabel(customerSchedule(l,"pickup"))} · opens ${timeLabelAmPm(p.time+hoursUntilCustomerOpens(l,"pickup",p.time))}</span></button>`).join("")}</div></div>`);
   }
   if(opts.dh.length){
     sections.push(`<div class="choice-section"><h4>Drop & Hook Lanes</h4><div class="choice-list">${
@@ -1423,6 +1480,9 @@ function deliverAction(){
   const sections=[];
   if(opts.live){
     sections.push(`<div class="choice-section"><h4>Live Load</h4><div class="choice-list"><button onclick="closeModal();unloadActive()"><b>${esc(p.active.origin)} → ${esc(p.active.destination)}</b><br><span class="small">${esc(p.active.commodity)} · ${p.active.reward} REP</span></button></div></div>`);
+  }
+  if(opts.closedLive){
+    sections.push(`<div class="choice-section closed-choice"><h4>Closed Customer</h4><div class="choice-list"><button disabled><b>${esc(p.active.origin)} → ${esc(p.active.destination)}</b><br><span class="small">Delivery ${scheduleLabel(customerSchedule(p.active,"delivery"))} · opens ${timeLabelAmPm(p.time+hoursUntilCustomerOpens(p.active,"delivery",p.time))}</span></button></div></div>`);
   }
   if(opts.dh){
     sections.push(`<div class="choice-section"><h4>Drop & Hook</h4><div class="choice-list"><button onclick="closeModal();dropHookAction()"><b>${esc(p.dhActive.origin)} → ${esc(p.dhActive.destination)}</b><br><span class="small">${p.dhActive.reward} REP · ½ hr drop</span></button></div></div>`);
@@ -1482,6 +1542,7 @@ function loadActive() {
 function doLoad(id){
   const p=state.players[state.current],idx=p.booked.findIndex(l=>l.id===id);
   if(idx<0)return;
+  if(!customerIsOpen(p.booked[idx],"pickup",p.time)){closeModal();render();return;}
   if(state.dropHooksEnabled&&!personalTrailerWithPlayer(p)){
     openModal(`<h3>No personal trailer</h3><p>Your trailer is in ${esc(p.personalTrailerLocation||"another city")}. Live freight requires your personal trailer.</p><button onclick="closeModal()">OK</button>`);return;
   }
@@ -1491,7 +1552,7 @@ function doLoad(id){
   p.personalTrailerAttached=true;
   p.personalTrailerLocation=playerCity(p)||p.personalTrailerLocation;
   spend(p,r.total,"load");
-  recordGameEvent("load_picked_up",{load_id:p.active.id,origin:p.active.origin,destination:p.active.destination,dwell_hours:r.total});
+  recordGameEvent("load_picked_up",{load_id:p.active.id,origin:p.active.origin,destination:p.active.destination,dwell_hours:r.total,pickup_schedule:scheduleLabel(customerSchedule(p.active,"pickup")),customer_open:true});
   if(!state.dropHooksEnabled){nextPlayer();render();closeModal();return}
   openModal(`<h3>Live Load Dwell</h3><div class="dwell-die">${r.modifier===0?"":esc(dwellText(r.modifier))}</div>
     <p>Base 1 hr${r.modifier===0?` · <b>No modifier</b>`:` · <b>${esc(dwellText(r.modifier))}</b>`}</p>
@@ -1504,10 +1565,11 @@ function unloadActive(){
   if(!p.active){openModal(`<h3>No active load</h3><p>You need to load freight before unloading.</p><button onclick="closeModal()">OK</button>`);return}
   const city=playerCity(p);
   if(city!==p.active.destination){openModal(`<h3>Wrong destination</h3><p>This load delivers in ${esc(p.active.destination)}.</p><button onclick="closeModal()">OK</button>`);return}
+  if(!customerIsOpen(p.active,"delivery",p.time)){openModal(`<h3>Customer Closed</h3><p>Delivery hours are ${scheduleLabel(customerSchedule(p.active,"delivery"))}.</p><button onclick="closeModal()">OK</button>`);return}
   const l=p.active,r=state.dropHooksEnabled?dwellRoll():{face:null,modifier:0,total:1};
   createUndo("Unload freight");spend(p,r.total,"unload");
   p.reputation+=l.reward;p.completed=p.completed||[];p.completed.push(l);p.active=null;
-  recordGameEvent("load_delivered",{load_id:l.id,origin:l.origin,destination:l.destination,reward:l.reward,rep_change:l.reward,dwell_hours:r.total});
+  recordGameEvent("load_delivered",{load_id:l.id,origin:l.origin,destination:l.destination,reward:l.reward,rep_change:l.reward,dwell_hours:r.total,delivery_schedule:scheduleLabel(customerSchedule(l,"delivery")),customer_open:true});
   p.personalTrailerAttached=true;
   p.personalTrailerLocation=playerCity(p)||p.personalTrailerLocation;
   checkGameEnd();
@@ -1526,39 +1588,59 @@ function refreshFreightMarket(){
   }
 }
 function doRest(){
-  const p=state.players[state.current];createUndo("10-hour reset");spend(p,10,"rest");p.driving=0;p.window=0;p.rested=false;p.driveBonusUsed=false;nextPlayer();render();
+  const p=state.players[state.current];createUndo("10-hour sleeper berth");spend(p,10,"rest");p.driving=0;p.window=0;p.rested=false;p.driveBonusUsed=false;recordGameEvent("sleeper_berth",{hours:10});closeModal();nextPlayer();render();
 }
-
+function updateOffDutyPreview(value){
+  const p=state.players[state.current],h=Number(value),label=document.getElementById("offDutyDuration"),end=document.getElementById("offDutyEnd");
+  if(label)label.textContent=hoursLabel(h)+" hours";if(end)end.textContent=timeLabelAmPm(p.time+h);
+}
+function doOffDuty(hours){
+  const p=state.players[state.current],h=Math.max(.5,Math.min(9.5,Math.round(Number(hours)*2)/2));createUndo(`Off duty ${h} hours`);spend(p,h,"offDuty");recordGameEvent("off_duty",{hours:h,ending_time:timeLabelAmPm(p.time)});closeModal();nextPlayer();render();
+}
 function rest(){
-  if(state.finished) return;
-  const rem=remainingDrive(state.players[state.current]);
-  if(rem>=5){
-    openModal(`<h3>Confirm Rest</h3><p>You have <b>${rem} available drive hours remaining</b>. Are you sure?</p>
-      <div class="row"><button onclick="closeModal()">No</button><button class="primary" onclick="closeModal();doRest()">Yes</button></div>`);
-    return;
-  }
-  doRest();
+  if(state.finished)return;
+  const p=state.players[state.current];
+  openModal(`<h3>Rest</h3><p class="small">Current time: <b>${timeLabelAmPm(p.time)}</b> · Drive time remaining: <b>${hoursLabel(remainingDrive(p))} hours</b></p>
+    <div class="rest-choice"><h4>Sleeper Berth</h4><p>Rest 10 hours until <b>${timeLabelAmPm(p.time+10)}</b>.</p><p class="small">Drive time resets to 11 hours.</p><button class="primary" onclick="doRest()">Sleeper Berth · 10 Hours</button></div>
+    <div class="rest-choice"><h4>Off Duty</h4><input id="offDutySlider" type="range" min="0.5" max="9.5" step="0.5" value="0.5" oninput="updateOffDutyPreview(this.value)"><div class="rest-preview"><span id="offDutyDuration">½ hours</span> · Until <span id="offDutyEnd">${timeLabelAmPm(p.time+.5)}</span></div><p class="small">Drive time does not reset.</p><button onclick="doOffDuty(document.getElementById('offDutySlider').value)">Go Off Duty</button></div>
+    <button onclick="closeModal()">Cancel</button>`);
 }
 
 function showTab(tab){state.activeTab=tab;renderTabs();}
 
 function playerCity(p){return p.position&&p.position.type==="city"?p.position.city:null}
-function canLoadNow(p){const c=playerCity(p);return !!c&&!p.active&&!p.dhActive&&(!state.dropHooksEnabled||personalTrailerWithPlayer(p))&&p.booked.some(l=>l.origin===c)}
-function canUnloadNow(p){const c=playerCity(p);return !!c&&!!p.active&&p.active.destination===c}
+function canLoadNow(p){const c=playerCity(p);return !!c&&!p.active&&!p.dhActive&&(!state.dropHooksEnabled||personalTrailerWithPlayer(p))&&p.booked.some(l=>l.origin===c&&customerIsOpen(l,"pickup",p.time))}
+function canUnloadNow(p){const c=playerCity(p);return !!c&&!!p.active&&p.active.destination===c&&customerIsOpen(p.active,"delivery",p.time)}
+function currentCustomerStops(p){
+  const c=playerCity(p);if(!c)return [];
+  const stops=p.booked.filter(l=>l.origin===c).map(l=>({load:l,kind:"pickup",label:"PICKUP"}));
+  if(p.active&&p.active.destination===c)stops.unshift({load:p.active,kind:"delivery",label:"DELIVERY"});
+  return stops;
+}
+function customerStatusPanel(p){
+  if(!state.customersEnabled)return "";
+  const stops=currentCustomerStops(p);if(!stops.length)return "";
+  return `<div class="customer-status-panel">${stops.map(s=>{const open=customerIsOpen(s.load,s.kind,p.time),sched=customerSchedule(s.load,s.kind),wait=hoursUntilCustomerOpens(s.load,s.kind,p.time);return `<div><strong class="${open?"open":"closed"}">${s.label} CUSTOMER ${open?"OPEN":"CLOSED"}</strong> · ${esc(s.kind==="pickup"?s.load.origin:s.load.destination)}<br><span>${scheduleLabel(sched)}${open?` · closes at ${timeLabelAmPm(sched.close)}`:` · opens at ${timeLabelAmPm(p.time+wait)}`}</span>${!open?`<br><button onclick="waitUntilOpen('${s.load.id}','${s.kind}')">Wait Until Open · ${hoursLabel(wait)} Hours</button>`:""}</div>`;}).join("<hr>")}</div>`;
+}
+function waitUntilOpen(loadId,kind){
+  const p=state.players[state.current],load=[...p.booked,p.active].filter(Boolean).find(l=>l.id===loadId);if(!load)return;
+  const hours=hoursUntilCustomerOpens(load,kind,p.time);if(hours<=0)return;
+  createUndo("Wait until customer opens");spend(p,hours,"customerWait");recordGameEvent("wait_until_open",{load_id:load.id,customer_type:kind,hours,customer:kind==="pickup"?load.origin:load.destination});nextPlayer();render();
+}
 function renderTabs(){
   const p=state.players[state.current];
   if(!state.started){document.getElementById("tabcontent").innerHTML=`<div class="small">Start a game.</div>`;return;}
 
-  const activeHtml=p.dhActive?`<div class="current-load-card active-load load-state-active load-clickable" onclick="activeLoadClick()"><div class="load-state-tag">DROP & HOOK</div><div class="load-title">${cityMarkup(p.dhActive.origin)} → ${cityMarkup(p.dhActive.destination,"delivery-city")}</div><div class="load-meta">D/H Dry Van · ${p.dhActive.reward} REP</div><button class="load-map-btn" onclick="event.stopPropagation();previewLoadRoute('${p.dhActive.id}')">🗺 Route</button></div>`:p.active?`<div class="current-load-card active-load load-state-active load-clickable" onclick="activeLoadClick()">
+  const activeHtml=p.dhActive?`<div class="current-load-card active-load load-state-active load-clickable" onclick="activeLoadClick()"><div class="load-state-tag">DROP & HOOK</div><div class="load-title">${loadRouteMarkup(p.dhActive,"","delivery-city")}</div><div class="load-meta">D/H Dry Van · ${p.dhActive.reward} REP</div><button class="load-map-btn" onclick="event.stopPropagation();previewLoadRoute('${p.dhActive.id}')">🗺 Route</button></div>`:p.active?`<div class="current-load-card active-load load-state-active load-clickable" onclick="activeLoadClick()">
     <div class="load-state-tag">DELIVER</div>
-    <div class="load-title">${cityMarkup(p.active.origin)} → ${cityMarkup(p.active.destination,"delivery-city")}</div>
+    <div class="load-title">${loadRouteMarkup(p.active,"","delivery-city")}</div>
     <div class="load-meta">${esc(p.active.commodity)} · ${esc(p.active.equipment)} · ${p.active.reward} REP</div>
     <button class="load-map-btn" onclick="event.stopPropagation();previewLoadRoute('${p.active.id}')">🗺 Route</button>
   </div>`:`<div class="small">No active load.</div>`;
 
   const bookedHtml=p.booked.length?p.booked.map(l=>`<div class="current-load-card load-state-pickup">
     <div class="load-state-tag">PICKUP</div>
-    <div class="load-title">${cityMarkup(l.origin,"pickup-city")} → ${cityMarkup(l.destination)}</div>
+    <div class="load-title">${loadRouteMarkup(l,"pickup-city","")}</div>
     <div class="market-tag below-route">${esc(l.market||DATA.cityMarkets?.[l.origin]||"")}</div>
     <div class="load-meta">${esc(l.commodity)} · ${esc(l.equipment)} · ${l.reward} REP</div>
     <div class="load-card-actions"><button class="load-map-btn" onclick="event.stopPropagation();previewLoadRoute('${l.id}')">🗺 Route</button><button class="load-map-btn cancel-load-btn" onclick="event.stopPropagation();cancelBookedLoad('${l.id}')" ${p.reputation<=0?"disabled title=\"Requires 1 REP\"":""}>Cancel Load</button></div>
@@ -1566,6 +1648,7 @@ function renderTabs(){
 
   document.getElementById("tabcontent").innerHTML=`<div class="driver-dashboard-shell" style="background:linear-gradient(180deg,${p.color}b3 0%,rgba(23,28,36,.97) 100%)">
     <div class="driver-dashboard-head"><div><div class="driver-dashboard-title">DRIVER DASHBOARD</div><div class="driver-dashboard-player">${esc(p.name)} · ${esc(positionLabel(p))}${playerCity(p)?` · ${esc(regionForCity(playerCity(p)))}`:""}</div></div><div class="dashboard-duty-summary"><div>Current Time: <b>${timeLabelAmPm(p.time)}</b></div><div>On-Duty Time Remaining: <b>Not Tracked</b></div><div>Drive Time Remaining: <b>${hoursLabel(remainingDrive(p))} Hours</b></div></div></div>
+    ${customerStatusPanel(p)}
     ${equipmentHtml(p)}
     <div class="v2-action-area">
       <div class="v2-action-stack">
@@ -1574,7 +1657,7 @@ function renderTabs(){
         <button class="action-btn" onclick="drive()" ${maxDriveSegments(p)<=0?"disabled":""}><span class="action-main">🚛 Drive</span><span class="action-cost">Up to ${hoursLabel(remainingDrive(p))} Hours</span></button>
         <button class="action-btn" onclick="pickupAction()" ${pickupOptions(p).live.length||pickupOptions(p).dh.length||pickupOptions(p).reattach?"":"disabled"}><span class="action-main">📦 Pickup</span><span class="action-cost">Time varies by load</span></button>
         <button class="action-btn" onclick="deliverAction()" ${deliverOptions(p).live||deliverOptions(p).dh?"":"disabled"}><span class="action-main">📤 Deliver</span><span class="action-cost">Time varies by load</span></button>
-        <button class="action-btn ${remainingDrive(p)===0?"rest-critical":remainingDrive(p)<=5?"rest-warning":""}" onclick="rest()"><span class="action-main">😴 Rest</span><span class="action-cost">10 Hours</span></button>
+        <button class="action-btn ${remainingDrive(p)===0?"rest-critical":remainingDrive(p)<=5?"rest-warning":""}" onclick="rest()"><span class="action-main">😴 Rest</span><span class="action-cost">Sleeper Berth or Off Duty</span></button>
       </div>
       <div class="current-loads-panel">
         <h3>Active Load</h3>${activeHtml}
@@ -1616,7 +1699,7 @@ function renderMarket(){
           return `<div class="compact-load ${selected?"selected":""} ${expanded?"expanded":""}" onclick="toggleLoadCard('${l.id}')">
             <div class="compact-load-main">
               <div class="freight-inline">
-                <span class="lane">${cityMarkup(l.origin)} → ${cityMarkup(l.destination)} <span class="dest-market">(${esc(regionForCity(l.destination))})</span></span>
+                <span class="lane">${loadRouteMarkup(l)} <span class="dest-market">(${esc(regionForCity(l.destination))})</span></span>
                 <button class="route-mini" onclick="event.stopPropagation();previewLoadRoute('${l.id}')">${state.routePreview&&state.routePreview.loadId===l.id?"Hide Route":"Route"}</button>
                 <span class="quick-stat">${l.miles||l.segments*50} mi</span>
                 <span class="quick-stat">${l.reward} REP</span>
@@ -1624,7 +1707,7 @@ function renderMarket(){
               </div>
             </div>
             <div class="compact-load-detail" onclick="event.stopPropagation()">
-              <div class="detail-route">${cityMarkup(l.origin)} → ${cityMarkup(l.destination)} <span class="dest-market">(${esc(regionForCity(l.destination))})</span></div>
+              <div class="detail-route">${loadRouteMarkup(l)} <span class="dest-market">(${esc(regionForCity(l.destination))})</span></div>
               <div class="detail-meta">
                 ${esc(l.commodity)}<br>
                 ${esc(l.equipment)} · ${l.miles||l.segments*50} miles · ${l.reward} REP
@@ -2103,6 +2186,15 @@ function driveDestinationInfo(node,fromPoint){
   const dotA=travel[0]*towardA[0]+travel[1]*towardA[1],dotB=travel[0]*towardB[0]+travel[1]*towardB[1];
   return {isDestination:!!stop,name:stop?stop.name:"",highway:edge?.highway||"Interstate",nextCity:dotB>=dotA?node.b:node.a};
 }
+function arrivalCustomerPreview(p,city,arrivalTime){
+  if(!state.customersEnabled)return "";
+  if(!city)return "";
+  const stops=[];
+  if(p.active&&p.active.destination===city)stops.push({load:p.active,kind:"delivery",label:"Delivery"});
+  p.booked.filter(l=>l.origin===city).forEach(l=>stops.push({load:l,kind:"pickup",label:"Pickup"}));
+  if(!stops.length)return "";
+  return `<p class="small">${stops.map(s=>{const open=customerIsOpen(s.load,s.kind,arrivalTime),sched=customerSchedule(s.load,s.kind);return `<b class="${open?"open":"closed"}">${s.label} customer will be ${open?"OPEN":"CLOSED"}</b> · ${scheduleLabel(sched)}${open?` · closes at ${timeLabelAmPm(sched.close)}`:` · opens at ${timeLabelAmPm(arrivalTime+hoursUntilCustomerOpens(s.load,s.kind,arrivalTime))}`}`;}).join("<br>")}</p>`;
+}
 
 function requestDriveToGraphNode(nodeId){
   if(!state.driveMode) return;
@@ -2112,11 +2204,13 @@ function requestDriveToGraphNode(nodeId){
   const hours=dist.get(nodeId);
   const node=graph.nodes.get(nodeId),fromPoint=truckXY(p);
   const cost=driveTimeCost(p,hours),info=driveDestinationInfo(node,fromPoint);
+  const customerPreview=node.type==="city"?arrivalCustomerPreview(p,node.city,p.time+cost):"";
   const question=info.isDestination
     ? `Drive <b>${cost} hour${cost===1?"":"s"}</b> / <b>${hours*50} miles</b> to arrive at <b>${esc(info.name)}</b> at <b>${timeLabelAmPm(p.time+cost)}</b>?`
     : `Drive <b>${cost} hour${cost===1?"":"s"}</b> / <b>${hours*50} miles</b> on <b>${esc(info.highway)}</b> toward <b>${esc(info.nextCity)}</b>?`;
   openModal(`<h3>Confirm Drive</h3>
     <p>${question}</p>
+    ${customerPreview}
     <p class="small">${cost<hours?"Includes the earned 50-mile bonus segment at no additional time.":`${cost} driving hour${cost===1?"":"s"}.`}</p>
     <div class="row">
       <button onclick="closeModal()">No</button>
@@ -2304,6 +2398,10 @@ function regionClassName(region){return "region-"+region.toLowerCase().replace(/
 function regionForCity(city){return DATA.cityMarkets?.[city]||""}
 function regionTextColor(city){return {"Northwest":"#f28c28","Southwest":"#ef4444","North Central":"#f2d34f","South Central":"#43c463","Northeast":"#4a90e2","Southeast":"#a66be0"}[regionForCity(city)]||"#fff"}
 function cityMarkup(city,extraClass=""){return `<span class="${extraClass}" style="color:${regionTextColor(city)}">${esc(city)}</span>`}
+function loadRouteMarkup(load,originClass="",destinationClass=""){
+  const hours=state.customersEnabled;
+  return `<span class="load-route-inline"><span class="customer-city-block">${cityMarkup(load.origin,originClass)}${hours?`<span class="customer-time-under">${scheduleLabel(customerSchedule(load,"pickup"))}</span>`:""}</span><span class="load-route-arrow">→</span><span class="customer-city-block">${cityMarkup(load.destination,destinationClass)}${hours?`<span class="customer-time-under">${scheduleLabel(customerSchedule(load,"delivery"))}</span>`:""}</span></span>`;
+}
 function toggleRegions(){}
 function renderRegionOverlay(){}
 
@@ -2420,14 +2518,14 @@ function downloadCsv(filename,rows){
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 function downloadGameLog(){
-  downloadCsv(`Big Rig V2.5 - Game Log - ${state.sessionId}.csv`,state.gameLog||[]);
+  downloadCsv(`Big Rig V3.1 - Game Log - ${state.sessionId}.csv`,state.gameLog||[]);
 }
 function gameSummaryRows(){
-  const modules=state.dropHooksEnabled?"Core Game; Drop & Hooks Module":"Core Game";
-  return state.players.map((p,i)=>{const elapsed=elapsedTime(p);return {session_id:state.sessionId,version:"Big Rig V2.5",started_at:state.sessionStartedAt,finished_at:new Date().toISOString(),modules,player_count:state.players.length,target_rep:state.repTarget,player_number:i+1,player_name:p.name,final_rep:p.reputation,total_elapsed_hours:elapsed,completed_loads:(p.completed||[]).length,rep_per_hour:elapsed?(p.reputation/elapsed).toFixed(3):"",booked_loads_remaining:p.booked.length,active_load_remaining:p.active||p.dhActive?1:0};});
+  const modules=enabledModulesLabel();
+  return state.players.map((p,i)=>{const elapsed=elapsedTime(p);return {session_id:state.sessionId,version:"Big Rig V3.1",started_at:state.sessionStartedAt,finished_at:new Date().toISOString(),modules,player_count:state.players.length,target_rep:state.repTarget,player_number:i+1,player_name:p.name,final_rep:p.reputation,total_elapsed_hours:elapsed,completed_loads:(p.completed||[]).length,rep_per_hour:elapsed?(p.reputation/elapsed).toFixed(3):"",booked_loads_remaining:p.booked.length,active_load_remaining:p.active||p.dhActive?1:0};});
 }
 function downloadGameSummary(){
-  downloadCsv(`Big Rig V2.5 - Game Summary - ${state.sessionId}.csv`,gameSummaryRows());
+  downloadCsv(`Big Rig V3.1 - Game Summary - ${state.sessionId}.csv`,gameSummaryRows());
 }
 
 function checkGameEnd(){
@@ -2499,9 +2597,11 @@ function render(){
 }
 
 function showRules(){
-  openModal(`<h3>Big Rig V2.5 — Drop & Hooks Rules</h3>
+  openModal(`<h3>Big Rig V3.1 — Customers Rules</h3>
   <div class="small" style="line-height:1.55">
   <p><b>Movement:</b> 1 node = 50 miles = 1 driving hour. A driver may drive up to 11 hours before taking a 10-hour reset. Completing all 11 driving hours earns one immediate additional 50-mile segment at no time cost, once per Tour of Duty.</p>
+  <p><b>Customers:</b> Live-load pickup and delivery actions may begin only while that load's customer is open. Customer schedules are Standard (8 AM–5 PM), Early (6 AM–2 PM), or Late (12 PM–8 PM). Drop & Hook facilities remain open 24/7. Service may finish after closing once it has begun.</p>
+  <p><b>Rest:</b> Sleeper Berth advances 10 hours and resets drive time and the 550-mile bonus. Off Duty advances ½–9½ hours without resetting either. Wait Until Open advances exactly to the customer's next opening without performing a reset. Core elapsed-time turn order applies after each action.</p>
   <p><b>Turns:</b> The player with the lowest absolute elapsed time is active.</p>
   <p><b>Setup:</b> Player order is randomized. Each player starts in the pickup city from a random Load Card draw; duplicate starting cities are redrawn. Setup cards are returned before the Freight Market is populated.</p><p><b>Loads:</b> Freight is divided into six origin regions. Each region displays one load per player. Booking is free and immediately refills that region. A player may hold a maximum of 3 booked loads; an active load does not count against this limit.</p><p><b>Search:</b> Search Load Board costs 1 hour. The persistent regional board enters selection mode; select any number of visible cards across any regions, then confirm to replace them simultaneously.</p>
   <p><b>Scoring:</b> Delivered loads earn REP. Each booked or active load left incomplete at game end costs 1 REP.</p>
@@ -2524,6 +2624,7 @@ function setup(){
     <div id="playerNameFields" class="player-name-fields"></div>
     <p class="small">Names are optional (15 characters max). Player order and starting cities are assigned automatically from random Load Card pickup cities. Players cannot start in the same city.</p>
     <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input id="dropHooksEnabled" type="checkbox" checked> <b>Drop & Hooks Module</b> — trailer positioning + live-load dwell die</label>
+    <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input id="customersEnabled" type="checkbox" checked> <b>Customers Module</b> — operating hours, closures, and Wait Until Open</label>
     <div class="row" style="margin-top:14px">
       <button onclick="closeModal()">Cancel</button>
       <button class="primary" onclick="startGame()">START GAME</button>
