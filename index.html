@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Big Rig V4.7 — Reputation & Compact Cards Playtest</title>
+<title>Big Rig V4.9 — Modular Dialogs & Dashboard Playtest</title>
 <style>
 :root {
   --bg:#0e1116; --panel:#171c24; --panel2:#202733; --line:#303a49;
@@ -705,7 +705,7 @@ header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-
 @keyframes activeRigPulse{0%,100%{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 3px currentColor)}50%{filter:drop-shadow(0 0 7px #fff) drop-shadow(0 0 11px currentColor)}}.map-rig.active-player{animation:activeRigPulse 1.35s ease-in-out infinite}
 
 /* V2.5 regional board, day clock, and player-dashboard refinements */
-.region-board.region-northwest{background:linear-gradient(180deg,rgba(242,140,40,.70),rgba(14,17,22,.96))!important}.region-board.region-southwest{background:linear-gradient(180deg,rgba(239,68,68,.70),rgba(14,17,22,.96))!important}.region-board.region-north-central{background:linear-gradient(180deg,rgba(242,211,79,.70),rgba(14,17,22,.96))!important}.region-board.region-south-central{background:linear-gradient(180deg,rgba(67,196,99,.70),rgba(14,17,22,.96))!important}.region-board.region-northeast{background:linear-gradient(180deg,rgba(74,144,226,.70),rgba(14,17,22,.96))!important}.region-board.region-southeast{background:linear-gradient(180deg,rgba(166,107,224,.70),rgba(14,17,22,.96))!important}
+.region-board.region-northwest{background:linear-gradient(135deg,rgba(242,140,40,.65),rgba(14,17,22,.75))!important}.region-board.region-southwest{background:linear-gradient(135deg,rgba(239,68,68,.65),rgba(14,17,22,.75))!important}.region-board.region-north-central{background:linear-gradient(135deg,rgba(242,211,79,.65),rgba(14,17,22,.75))!important}.region-board.region-south-central{background:linear-gradient(135deg,rgba(67,196,99,.65),rgba(14,17,22,.75))!important}.region-board.region-northeast{background:linear-gradient(135deg,rgba(74,144,226,.65),rgba(14,17,22,.75))!important}.region-board.region-southeast{background:linear-gradient(135deg,rgba(166,107,224,.65),rgba(14,17,22,.75))!important}
 .region-board>h3,.region-board>h3 .region-count,.dedicated-slot-label{color:#080b0e!important;text-shadow:none!important}.dedicated-slot{border-top-color:rgba(0,0,0,.45)}
 .dedicated-empty{padding:10px;border:1px dashed rgba(0,0,0,.48);border-radius:8px;background:rgba(255,255,255,.24);color:#080b0e;font-size:10px;font-weight:950;text-align:center;letter-spacing:.05em}
 .load-card-actions .load-map-btn{width:82px;min-width:82px}
@@ -734,6 +734,7 @@ header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-
 .module-fuel{color:#57d37f!important}
 .vehicle-art{position:relative;display:inline-block;line-height:0}.vehicle-art img{display:block;width:100%;height:100%;object-fit:contain}.vehicle-art:after{content:"";position:absolute;inset:0;background:var(--vehicle-color);-webkit-mask:var(--vehicle-image) center/contain no-repeat;mask:var(--vehicle-image) center/contain no-repeat;mix-blend-mode:screen;pointer-events:none}.vehicle-art.dashboard-tractor-art{width:118px;height:70px;margin:3px auto 6px}.vehicle-art.dashboard-trailer-art{width:132px;height:70px;margin:3px auto 6px}.vehicle-art.map-vehicle-art{width:58px;height:29px;display:block}.map-rig.asset-rig{width:58px!important;height:29px!important}.map-rig.asset-rig .p-tag{top:-13px}.map-rig.asset-rig .heading-arrow{top:-10px}.screen-truck.asset-screen-truck{width:35px;height:18px;background:transparent!important;border:0!important}.screen-truck.asset-screen-truck .vehicle-art{width:35px;height:18px;display:block}
 .rep-display{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-weight:900}.rep-icon{width:20px;height:20px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}.rep-display.compact .rep-icon{width:17px;height:17px}.rep-display.large .rep-icon{width:25px;height:25px}.rep-display.loss{color:#ff8585}.rep-display.unavailable{filter:grayscale(1);opacity:.38}
+.fuel-glyph{color:#57d37f!important;font-family:"Segoe UI Symbol","Arial Unicode MS",sans-serif;font-weight:950;text-shadow:none}.equipment-chain{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:8px}.equipment-chain .rig-arrow{display:none}.equipment-chain .eq-slot{justify-content:flex-start;align-items:stretch;text-align:left;min-height:230px;padding:9px}.eq-card-title{font-size:12px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;padding-bottom:6px;border-bottom:1px solid rgba(17,17,17,.2)}.eq-art-line{height:78px;display:flex;align-items:flex-end;justify-content:center;margin:5px -2px 8px;overflow:visible}.power-card .dashboard-tractor-art{width:145px!important;height:70px!important;margin:0!important}.trailer-card .dashboard-trailer-art{width:190px!important;height:70px!important;margin:0!important}.eq-specs{display:grid;grid-template-columns:auto 1fr;gap:4px 7px;font-size:10px;line-height:1.3}.eq-specs dt{font-weight:950}.eq-specs dd{margin:0}.eq-load-state{font-weight:950}.rating-title{display:block;font-weight:950;margin-bottom:3px}.no-trailer-card{background:#050607!important;color:#fff!important;display:grid!important;place-items:center!important;text-align:center!important;font-size:16px;font-weight:950;letter-spacing:.08em}.player-status-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}.player-status-main{min-width:0}.ps-current-time{display:block;margin-top:2px;font-size:11px;color:#dce5ef}.player-status .ps-location{display:block;margin-top:3px;color:#dce5ef;font-size:11px}.player-status-rep .rep-display{font-size:18px}.player-status-rep .rep-icon{width:30px;height:30px}.module-appointments{color:#c58cff!important}.module-dialog-title{display:flex;align-items:center;justify-content:center;gap:5px}.module-name{font-weight:900}.module-name.module-core{color:#fff}.module-name.module-dh{color:#ff9d4d}.module-name.module-customers{color:#62b7ff}.module-name.module-fuel{color:#57d37f}.module-name.module-appointments{color:#c58cff}
 </style>
 </head>
 <body>
@@ -755,17 +756,17 @@ header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-
     <section class="panel version-detail-panel">
       <h2>Version Detail</h2>
       <div class="version-detail-text">
-        <b>Big Rig V4.7 — Reputation &amp; Compact Cards Playtest</b><br><br>
+        <b>Big Rig V4.9 — Modular Dialogs &amp; Dashboard Playtest</b><br><br>
         <b>Included Modules</b><br>
-        <span class="module-legend-line"><span class="module-icon module-core">⚙</span>Core</span><br>
-        <span class="module-legend-line"><span class="module-icon module-fuel">⛽</span>Fuel</span><br>
-        <span class="module-legend-line"><span class="module-icon module-appointments">⚄</span>Appointment Times</span><br>
-        <span class="module-legend-line"><span class="module-icon module-dh">▰⇄</span>Drop &amp; Hooks</span><br>
-        <span class="module-legend-line"><span class="module-icon module-customers">▦</span>Customers</span><br><br>
+        <span class="module-legend-line"><span class="module-icon module-core">⚙</span><span class="module-name module-core">Core</span></span><br>
+        <span class="module-legend-line"><span class="module-icon module-fuel fuel-glyph">⛽︎</span><span class="module-name module-fuel">Fuel</span></span><br>
+        <span class="module-legend-line"><span class="module-icon module-appointments">◎</span><span class="module-name module-appointments">Appointments</span></span><br>
+        <span class="module-legend-line"><span class="module-icon module-dh">▰⇄</span><span class="module-name module-dh">Drop &amp; Hooks</span></span><br>
+        <span class="module-legend-line"><span class="module-icon module-customers">▦</span><span class="module-name module-customers">Customers</span></span><br><br>
         <b>Core Map</b><br>
         Major Interstate network only<br>
         Gray node = 1 hour / ~50 miles<br>
-        ⛽ label = fuel/rest landmark<br>
+        <span class="fuel-glyph">⛽︎</span> label = fuel/rest landmark<br>
         Pinch/wheel to zoom · drag to pan<br>
         Standard speed: 50 MPH
       </div>
@@ -924,7 +925,9 @@ const STRATEGIC_SERVICE_AREAS=[
 ];
 const SERVICE_NODES=[...(DATA.truckStops||[]).map((stop,index)=>({...stop,id:`major-service-${index+1}`,kind:"major",services:{fuel:true,rest:true,parking:true}})),...STRATEGIC_SERVICE_AREAS.map((stop,index)=>({...stop,id:`strategic-service-${index+1}`,kind:"strategic",services:{fuel:true,rest:true,parking:true}}))];
 function loadHash(load){return [...String(load?.id||"")].reduce((n,c)=>((n*31+c.charCodeAt(0))>>>0),7)}
-function moduleIcon(kind,active=true){const icons={core:["⚙","module-core","Core"],dh:["▰⇄","module-dh","Drop & Hooks"],customers:["▦","module-customers","Customers"],fuel:["⛽","module-fuel","Fuel"],appointments:["⚄","module-appointments","Appointment Times"],weather:["☁","module-weather","Weather"],equipment:["🔧","module-equipment","Equipment"],maintenance:["⬟","module-maintenance","Safety & Maintenance"],events:["▤","module-events","Events"],ltl:["▦","module-ltl","LTL"],hos:["◷","module-hos","Hours of Service"],doubles:["▰▰","module-doubles","Doubles"],truckstops:["▣","module-truckstops","Truck Stops"]},x=icons[kind];return `<span class="module-icon ${x[1]} ${active?"":"inactive"}" title="${x[2]}${active?"":" · not this card's set"}" aria-label="${x[2]}${active?"":" inactive"}">${x[0]}</span>`}
+function moduleIcon(kind,active=true){const icons={core:["⚙","module-core","Core"],dh:["▰⇄","module-dh","Drop & Hooks"],customers:["▦","module-customers","Customers"],fuel:["⛽︎","module-fuel fuel-glyph","Fuel"],appointments:["◎","module-appointments","Appointments"],weather:["☁","module-weather","Weather"],equipment:["🔧","module-equipment","Equipment"],maintenance:["⬟","module-maintenance","Safety & Maintenance"],events:["▤","module-events","Events"],ltl:["▦","module-ltl","LTL"],hos:["◷","module-hos","Hours of Service"],doubles:["▰▰","module-doubles","Doubles"],truckstops:["▣","module-truckstops","Truck Stops"]},x=icons[kind];return `<span class="module-icon ${x[1]} ${active?"":"inactive"}" title="${x[2]}${active?"":" · not this card's set"}" aria-label="${x[2]}${active?"":" inactive"}">${x[0]}</span>`}
+function fuelGlyph(){return `<span class="fuel-glyph" aria-label="Fuel">⛽︎</span>`}
+function moduleDialogTitle(kind,text){return `<h3 class="module-dialog-title">${moduleIcon(kind)}<span>${text}</span></h3>`}
 function loadFutureResources(){return `<span class="future-resources" title="Future module values: 1 badge, 1 wrench"><span class="future-resource future-badge" aria-label="1 badge">1</span><span class="future-resource future-wrench" aria-label="1 wrench">🔧<b>1</b></span></span>`}
 function loadModuleStrip(load){const owner=load?.type==="DropHook"?"dh":"core",order=["core","dh","customers","fuel","appointments","weather","equipment","maintenance","events","ltl","hos","doubles","truckstops"];return `<div class="module-ownership-strip">${order.map(kind=>moduleIcon(kind,kind===owner)).join("")}</div>`}
 function loadCardFooter(load){return `<div>${loadFutureResources()}</div>${loadModuleStrip(load)}`}
@@ -938,7 +941,8 @@ function appointmentCandidates(schedule,band){
   const third=Math.max(1,Math.ceil(hours.length/3)),bands={morning:hours.slice(0,third),afternoon:hours.slice(third,third*2),night:hours.slice(third*2)};
   return bands[band]?.length?bands[band]:hours;
 }
-function generateAppointment(load,kind){const band=load.appointmentBands?.[kind]||appointmentBandFor(load,kind),s=customerSchedule(load,kind),valid=appointmentCandidates(s,band);return valid[Math.floor(Math.random()*valid.length)]}
+function appointmentSchedule(load,kind){return state.customersEnabled?customerSchedule(load,kind):CUSTOMER_SCHEDULES.standard}
+function generateAppointment(load,kind){const band=load.appointmentBands?.[kind]||appointmentBandFor(load,kind),s=appointmentSchedule(load,kind),valid=appointmentCandidates(s,band);return valid[Math.floor(Math.random()*valid.length)]}
 function assignAppointments(load){
   if(!appointmentEligible(load))return load;
   load.appointmentOnly=true;load.appointmentKinds=appointmentKindsFor(load);load.appointmentBands={};
@@ -952,14 +956,14 @@ function appointmentBadge(load){
   return `<div class="appointment-line">${notices} ${load.appointmentRepPenalty?`<span class="rep-penalty">${repDisplay(`−${load.appointmentRepPenalty}`,{compact:true,loss:true})}</span>`:""}</div>`;
 }
 function appointmentOfferBadge(load){if(!appointmentEligible(load))return "";return `<div class="appointment-line">${appointmentKindsFor(load).map(kind=>{const band=APPOINTMENT_BANDS[appointmentBandFor(load,kind)];return `<span class="appointment-band" style="--appointment-color:${band.color}">${kind==="pickup"?"SHIPPER":"RECEIVER"} APPOINTMENT REQUIRED</span>`}).join("<br>")}</div>`}
-function showAppointmentRequest(load,index=0){if(!load?.appointmentOnly)return;const p=state.players[state.current],kinds=appointmentKindsFor(load),kind=kinds[index];if(!kind){closeModal();return}const band=APPOINTMENT_BANDS[load.appointmentBands?.[kind]||appointmentBandFor(load,kind)],party=kind==="pickup"?"Shipper":"Receiver",next=index<kinds.length-1,rolledTime=timeLabelAmPm(load[kind+"Appointment"]).replace(" ","<br>");openModal(`<h3>Requesting ${party} Appointment</h3><div class="appointment-die" style="--die-color:${band.color}">${rolledTime}</div><p style="text-align:center"><b>${party} appointment:</b> ${timeLabelFull(load[kind+"Appointment"])}</p><div class="row"><button class="danger" onclick="confirmCancelBookedLoad('${load.id}')" ${p.reputation<=0?'disabled title="REP cannot drop below 0"':''}>Cancel Load · −1 REP</button><button class="primary" onclick="${next?`showAppointmentRequest(state.players[state.current].booked.find(l=>l.id==='${load.id}'),${index+1})`:`closeModal()`}">Confirm</button></div>`)}
+function showAppointmentRequest(load,index=0){if(!load?.appointmentOnly)return;const p=state.players[state.current],kinds=appointmentKindsFor(load),kind=kinds[index];if(!kind){closeModal();return}const band=APPOINTMENT_BANDS[load.appointmentBands?.[kind]||appointmentBandFor(load,kind)],party=kind==="pickup"?"Shipper":"Receiver",next=index<kinds.length-1,rolledTime=timeLabelAmPm(load[kind+"Appointment"]).replace(" ","<br>");openModal(`${moduleDialogTitle("appointments",`Requesting ${party} Appointment`)}<div class="appointment-die" style="--die-color:${band.color}">${rolledTime}</div><p style="text-align:center"><b>${party} appointment:</b> ${timeLabelFull(load[kind+"Appointment"])}</p><div class="row"><button class="danger" onclick="confirmCancelBookedLoad('${load.id}')" ${p.reputation<=0?'disabled title="REP cannot drop below 0"':''}>Cancel Load · −1 REP</button><button class="primary" onclick="${next?`showAppointmentRequest(state.players[state.current].booked.find(l=>l.id==='${load.id}'),${index+1})`:`closeModal()`}">Confirm</button></div>`)}
 function randomCustomerSchedule(){const r=Math.random();return r<.6?"standard":r<.8?"early":"late"}
 function initializeCustomerHours(){
   state.customerHours={};
   DATA.loads.forEach(l=>{state.customerHours[l.id]={pickup:randomCustomerSchedule(),delivery:randomCustomerSchedule()};});
 }
 function customerSchedule(load,kind){
-  if(!load||load.type==="DropHook")return {name:"24/7",open:0,close:24,always:true};
+  if(!state.customersEnabled||!load||load.type==="DropHook")return {name:"24/7",open:0,close:24,always:true};
   const key=state.customerHours?.[load.id]?.[kind]||"standard";
   return CUSTOMER_SCHEDULES[key]||CUSTOMER_SCHEDULES.standard;
 }
@@ -970,10 +974,11 @@ function hoursUntilCustomerOpens(load,kind,time){
   const h=((time%24)+24)%24;return h<s.open?s.open-h:24-h+s.open;
 }
 function customerHoursMarkup(load){
+  if(!state.customersEnabled)return "";
   const pu=customerSchedule(load,"pickup"),del=customerSchedule(load,"delivery");
   return `<div class="customer-hours"><span>Pickup: ${scheduleLabel(pu)}</span><br><span>Delivery: ${scheduleLabel(del)}</span></div>`;
 }
-function enabledModulesLabel(){const modules=["Core Game"];if(state.fuelEnabled)modules.push("Fuel Module");if(state.appointmentsEnabled)modules.push("Appointment Times Module");if(state.equipmentEnabled)modules.push("Equipment Module");if(state.dropHooksEnabled)modules.push("Drop & Hooks Module");if(state.customersEnabled)modules.push("Customers Module");return modules.join("; ")}
+function enabledModulesLabel(){const modules=["Core Game"];if(state.fuelEnabled)modules.push("Fuel Module");if(state.appointmentsEnabled)modules.push("Appointments Module");if(state.equipmentEnabled)modules.push("Equipment Module");if(state.dropHooksEnabled)modules.push("Drop & Hooks Module");if(state.customersEnabled)modules.push("Customers Module");return modules.join("; ")}
 function hoursLabel(h){return Number.isInteger(h)?`${h}`:h<1?"½":`${Math.floor(h)}½`}
 function mod48(x){return ((x%48)+48)%48;}
 function distanceTo(a,b) {
@@ -1033,9 +1038,9 @@ function serviceAtPosition(p){
 function canFuelHere(p){return !!serviceAtPosition(p)?.services?.fuel}
 function fuel(){
   if(state.finished||state.fuelEnabled===false)return;const p=state.players[state.current],place=serviceAtPosition(p);
-  if(!place?.services?.fuel){openModal(`<h3>Fuel unavailable</h3><p>Fuel is available in cities and at marked service locations. Gray route nodes are not normal service stops.</p><button onclick="closeModal()">OK</button>`);return}
+  if(!place?.services?.fuel){openModal(`${moduleDialogTitle("fuel","Fuel unavailable")}<p>Fuel is available in cities and at marked service locations. Gray route nodes are not normal service stops.</p><button onclick="closeModal()">OK</button>`);return}
   const spec=p.powertrain||DEFAULT_POWERTRAIN;
-  const gallons=Math.max(0,Math.ceil(spec.capacity-(p.energy??spec.capacity)));openModal(`<h3>Fuel</h3><p>Fuel <b>${gallons} gallons</b> for <b>30 minutes</b>?</p><div class="row"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="confirmFuel()">Fuel</button></div>`);
+  const gallons=Math.max(0,Math.ceil(spec.capacity-(p.energy??spec.capacity)));openModal(`${moduleDialogTitle("fuel","Fuel")}<p>Fuel <b>${gallons} gallons</b> for <b>30 minutes</b>?</p><div class="row"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="confirmFuel()">Fuel</button></div>`);
 }
 function confirmFuel(){const p=state.players[state.current],place=serviceAtPosition(p),spec=p.powertrain||DEFAULT_POWERTRAIN;if(!place?.services?.fuel)return;createUndo("Fuel to maximum");p.energy=spec.capacity;spend(p,.5,"fuel");recordGameEvent("fuel",{location:place.name,capacity:spec.capacity,efficiency:spec.efficiency,range_miles:rangeMiles(p)});closeModal();nextPlayer();render()}
 function nextPlayer(){
@@ -1128,7 +1133,7 @@ function makeSessionId(){
 function recordGameEvent(action,details={}){
   if(!state.sessionId)return;
   const p=state.players[state.current]||null;
-  state.gameLog.push({sequence:state.gameLog.length+1,recorded_at:new Date().toISOString(),session_id:state.sessionId,version:"Big Rig V4.7",day:state.sharedDay||1,player_number:p?state.current+1:"",player_name:p?p.name:"",player_elapsed_hours:p?elapsedTime(p):"",game_clock:p?timeLabel(p.time):"",action,...details});
+  state.gameLog.push({sequence:state.gameLog.length+1,recorded_at:new Date().toISOString(),session_id:state.sessionId,version:"Big Rig V4.9",day:state.sharedDay||1,player_number:p?state.current+1:"",player_name:p?p.name:"",player_elapsed_hours:p?elapsedTime(p):"",game_clock:p?timeLabel(p.time):"",action,...details});
 }
 function activityText(e){
   const who=e.player_name||`Player ${e.player_number||""}`,hours=hoursLabel(Number(e.hours)||0);
@@ -1496,7 +1501,7 @@ function startDropHook(id){
   const p=state.players[state.current],c=playerCity(p);
   const l=(state.dhLanes||[]).find(x=>x.id===id);
   if(!l||!c||l.origin!==c||p.active||p.dhActive||laneTrailersAt(l,c)<=0){
-    openModal(`<h3>Drop & Hook unavailable</h3><p>This lane cannot be picked up right now.</p><button onclick="closeModal()">OK</button>`);
+    openModal(`${moduleDialogTitle("dh","Drop & Hook unavailable")}<p>This lane cannot be picked up right now.</p><button onclick="closeModal()">OK</button>`);
     return;
   }
   createUndo("Drop & Hook");
@@ -1518,7 +1523,7 @@ function dropHookAction(){
   if(p.dhActive){
     const target=p.dhActive.phase==="outbound"?p.dhActive.turnaround:p.dhActive.shipPoint;
     if(c!==target){
-      openModal(`<h3>Wrong destination</h3><p>This D/H round trip must continue to ${esc(target)}.</p><button onclick="closeModal()">OK</button>`);return;
+      openModal(`${moduleDialogTitle("dh","Wrong destination")}<p>This D/H round trip must continue to ${esc(target)}.</p><button onclick="closeModal()">OK</button>`);return;
     }
     const l=p.dhActive,lane=state.dhLanes.find(x=>x.id===(l.laneId||l.id));createUndo("Drop D/H trailer");spend(p,.5,"dropHook");
     if(l.phase==="outbound"){
@@ -1534,9 +1539,9 @@ function dropHookAction(){
   }
   const opts=dhOptionsAt(c);
   if(!opts.length||dhTrailersAt(c)<=0){
-    openModal(`<h3>No Drop & Hook available</h3><p>There is no D/H trailer and active lane available at ${esc(c)}.</p><button onclick="closeModal()">OK</button>`);return;
+    openModal(`${moduleDialogTitle("dh","No Drop & Hook available")}<p>There is no D/H trailer and active lane available at ${esc(c)}.</p><button onclick="closeModal()">OK</button>`);return;
   }
-  openModal(`<h3>Drop & Hook at ${esc(c)}</h3><p class="small">${dhTrailersAt(c)} D/H trailer(s) available.</p>
+  openModal(`${moduleDialogTitle("dh",`Drop & Hook at ${esc(c)}`)}<p class="small">${dhTrailersAt(c)} D/H trailer(s) available.</p>
     <div class="choicegrid">${opts.map(l=>`<button onclick="startDropHook('${l.id}')">${esc(l.origin)} ⇄ ${esc(l.destination)}<br><span class="small">Loaded out · empty return · ${dhRewardFor(p,l)} REP paid on return · ½ hr hook</span></button>`).join("")}</div>
     <button onclick="closeModal()">Cancel</button>`);
 }
@@ -1650,7 +1655,7 @@ function loadActive() {
   const p=state.players[state.current];
   if(p.active||p.dhActive) return;
   if(state.dropHooksEnabled&&!personalTrailerWithPlayer(p)){
-    openModal(`<h3>No personal trailer</h3><p>Your personal trailer is in ${esc(p.personalTrailerLocation||"another city")}. Reconnect with it before taking live freight.</p><button onclick="closeModal()">OK</button>`);return;
+    openModal(`${moduleDialogTitle("dh","No personal trailer")}<p>Your personal trailer is in ${esc(p.personalTrailerLocation||"another city")}. Reconnect with it before taking live freight.</p><button onclick="closeModal()">OK</button>`);return;
   }
   const city=playerCity(p);
   if(!city){openModal(`<h3>You're between cities</h3><p>You may rest here, but you must reach the shipper city to load freight.</p><button class="primary" onclick="closeModal()">OK</button>`);return;}
@@ -1666,16 +1671,16 @@ function loadActive() {
 function doLoad(id){
   const p=state.players[state.current],idx=p.booked.findIndex(l=>l.id===id);
   if(idx<0)return;
-  if(!customerIsOpen(p.booked[idx],"pickup",p.time)){closeModal();render();return;}
+  if(!customerIsOpen(p.booked[idx],"pickup",p.time)){const l=p.booked[idx];openModal(`${moduleDialogTitle("customers","Customer Closed")}<p>Pickup hours are ${scheduleLabel(customerSchedule(l,"pickup"))}.</p><button onclick="closeModal()">OK</button>`);return;}
   if(state.dropHooksEnabled&&!personalTrailerWithPlayer(p)){
-    openModal(`<h3>No personal trailer</h3><p>Your trailer is in ${esc(p.personalTrailerLocation||"another city")}. Live freight requires your personal trailer.</p><button onclick="closeModal()">OK</button>`);return;
+    openModal(`${moduleDialogTitle("dh","No personal trailer")}<p>Your trailer is in ${esc(p.personalTrailerLocation||"another city")}. Live freight requires your personal trailer.</p><button onclick="closeModal()">OK</button>`);return;
   }
   const load=p.booked[idx],penalty=appointmentPenalty(load,"pickup",p.time);if(penalty>0){showAppointmentServiceWarning(load,"pickup",penalty,`performLoad('${id}')`);return}performLoad(id);
 }
-function showAppointmentServiceWarning(load,kind,penalty,proceedAction){const p=state.players[state.current],appt=appointmentFor(load,kind),now=((p.time%24)+24)%24,direction=now<appt?"early":"late",existing=load.appointmentRepPenalty||0,projected=Math.max(0,load.reward-existing-penalty),party=kind==="pickup"?"Shipper":"Receiver";openModal(`<h3>Appointment Warning</h3><p>You are <b>${penalty} hour${penalty===1?"":"s"} ${direction}</b> for the ${party.toLowerCase()} appointment.</p><p>Booked appointment: <b>${timeLabelFull(appt)}</b><br>Current time: <b>${timeLabelFull(p.time)}</b><br>Immediate penalty: <b class="rep-penalty">−${penalty} REP</b>${existing?`<br>Previously accumulated: <b>−${existing} REP</b>`:""}<br>Projected load payout: <b>${projected} REP</b></p><div class="choicegrid action-submenu"><button class="danger" onclick="${proceedAction}">Proceed · −${penalty} REP</button><button onclick="offDutyWait()">Wait</button><button onclick="closeModal()">Cancel</button></div>`)}
+function showAppointmentServiceWarning(load,kind,penalty,proceedAction){const p=state.players[state.current],appt=appointmentFor(load,kind),now=((p.time%24)+24)%24,direction=now<appt?"early":"late",existing=load.appointmentRepPenalty||0,projected=Math.max(0,load.reward-existing-penalty),party=kind==="pickup"?"Shipper":"Receiver";openModal(`${moduleDialogTitle("appointments","Appointment Warning")}<p>You are <b>${penalty} hour${penalty===1?"":"s"} ${direction}</b> for the ${party.toLowerCase()} appointment.</p><p>Booked appointment: <b>${timeLabelFull(appt)}</b><br>Current time: <b>${timeLabelFull(p.time)}</b><br>Immediate penalty: <b class="rep-penalty">−${penalty} REP</b>${existing?`<br>Previously accumulated: <b>−${existing} REP</b>`:""}<br>Projected load payout: <b>${projected} REP</b></p><div class="choicegrid action-submenu"><button class="danger" onclick="${proceedAction}">Proceed · −${penalty} REP</button><button onclick="offDutyWait()">Wait</button><button onclick="closeModal()">Cancel</button></div>`)}
 function performLoad(id){
   const p=state.players[state.current],idx=p.booked.findIndex(l=>l.id===id);if(idx<0)return;
-  const r=state.dropHooksEnabled?dwellRoll():{face:null,modifier:0,total:1};
+  const r=state.customersEnabled?dwellRoll():{face:null,modifier:0,total:1};
   createUndo("Load freight");
   p.active=p.booked.splice(idx,1)[0];
   const pickupPenalty=appointmentPenalty(p.active,"pickup",p.time);p.active.appointmentRepPenalty=(p.active.appointmentRepPenalty||0)+pickupPenalty;
@@ -1683,10 +1688,9 @@ function performLoad(id){
   p.personalTrailerLocation=playerCity(p)||p.personalTrailerLocation;
   spend(p,r.total,"load");
   recordGameEvent("load_picked_up",{load_id:p.active.id,origin:p.active.origin,destination:p.active.destination,dwell_hours:r.total,pickup_schedule:scheduleLabel(customerSchedule(p.active,"pickup")),customer_open:true,appointment:p.active.pickupAppointment??"",rep_penalty:pickupPenalty,total_rep_penalty:p.active.appointmentRepPenalty||0});
-  if(!state.dropHooksEnabled){nextPlayer();render();closeModal();return}
-  openModal(`<h3>Live Load Dwell</h3><div class="dwell-die ${dwellClass(r.modifier)}">${esc(dwellText(r.modifier))}</div>
-    <p>Base 1 hr · <b class="${dwellClass(r.modifier)}">${esc(dwellText(r.modifier))}</b></p>
-    <p>Total loading time: <b>${r.total===.5?"½":r.total} hr</b></p>
+  if(!state.customersEnabled){nextPlayer();render();closeModal();return}
+  openModal(`${moduleDialogTitle("customers","Live Load")}<p>Base Loading Time: <b>1 Hour</b></p><div class="dwell-die ${dwellClass(r.modifier)}">${esc(dwellText(r.modifier))}</div>
+    <p><b>Total Loading Time: ${r.total===.5?"½":r.total} Hour${r.total===1?"":"s"}</b></p>
     <button class="primary" onclick="closeModal();nextPlayer();render()">Continue</button>`);
 }
 function unloadActive(){
@@ -1695,11 +1699,11 @@ function unloadActive(){
   if(!p.active){openModal(`<h3>No active load</h3><p>You need to load freight before unloading.</p><button onclick="closeModal()">OK</button>`);return}
   const city=playerCity(p);
   if(city!==p.active.destination){openModal(`<h3>Wrong destination</h3><p>This load delivers in ${esc(p.active.destination)}.</p><button onclick="closeModal()">OK</button>`);return}
-  if(!customerIsOpen(p.active,"delivery",p.time)){openModal(`<h3>Customer Closed</h3><p>Delivery hours are ${scheduleLabel(customerSchedule(p.active,"delivery"))}.</p><button onclick="closeModal()">OK</button>`);return}
+  if(!customerIsOpen(p.active,"delivery",p.time)){openModal(`${moduleDialogTitle("customers","Customer Closed")}<p>Delivery hours are ${scheduleLabel(customerSchedule(p.active,"delivery"))}.</p><button onclick="closeModal()">OK</button>`);return}
   const l=p.active,penalty=appointmentPenalty(l,"delivery",p.time);if(penalty>0){showAppointmentServiceWarning(l,"delivery",penalty,"performUnloadActive()");return}performUnloadActive();
 }
 function performUnloadActive(){
-  const p=state.players[state.current],l=p.active;if(!l)return;const r=state.dropHooksEnabled?dwellRoll():{face:null,modifier:0,total:1};
+  const p=state.players[state.current],l=p.active;if(!l)return;const r=state.customersEnabled?dwellRoll():{face:null,modifier:0,total:1};
   createUndo("Unload freight");spend(p,r.total,"unload");
   const deliveryPenalty=appointmentPenalty(l,"delivery",p.time-r.total);l.appointmentRepPenalty=(l.appointmentRepPenalty||0)+deliveryPenalty;const earnedRep=Math.max(0,l.reward-l.appointmentRepPenalty);
   p.reputation+=earnedRep;p.completed=p.completed||[];p.completed.push(l);p.active=null;
@@ -1708,9 +1712,8 @@ function performUnloadActive(){
   p.personalTrailerLocation=playerCity(p)||p.personalTrailerLocation;
   checkGameEnd();
   if(state.finished){render();return}
-  if(!state.dropHooksEnabled){nextPlayer();render();closeModal();return}
-  openModal(`<h3>Live Unload Dwell</h3><div class="dwell-die ${dwellClass(r.modifier)}">${esc(dwellText(r.modifier))}</div>
-    <p>Base 1 hr · <b class="${dwellClass(r.modifier)}">${esc(dwellText(r.modifier))}</b></p><p>Total unloading time: <b>${r.total===.5?"½":r.total} hr</b></p>
+  if(!state.customersEnabled){nextPlayer();render();closeModal();return}
+  openModal(`${moduleDialogTitle("customers","Live Unload")}<p>Base Unloading Time: <b>1 Hour</b></p><div class="dwell-die ${dwellClass(r.modifier)}">${esc(dwellText(r.modifier))}</div><p><b>Total Unloading Time: ${r.total===.5?"½":r.total} Hour${r.total===1?"":"s"}</b></p>
     <button class="primary" onclick="closeModal();nextPlayer();render()">Continue</button>`);
 }
 
@@ -1764,7 +1767,7 @@ function waitUntilOpen(loadId,kind){
 function workAvailable(p){return !!(playerCity(p)||serviceAtPosition(p))}
 function work(){
   const p=state.players[state.current],city=playerCity(p),place=serviceAtPosition(p);if(!place)return;
-  const fuelOption=state.fuelEnabled&&place.services?.fuel?`<button onclick="closeModal();fuel()">⛽ Fuel · 30 minutes</button>`:"";
+  const fuelOption=state.fuelEnabled&&place.services?.fuel?`<button onclick="closeModal();fuel()">${fuelGlyph()} Fuel · 30 minutes</button>`:"";
   const pickups=pickupOptions(p),deliveries=deliverOptions(p),pickupReady=!!(pickups.live.length||pickups.dh.length||pickups.reattach),deliverReady=!!(deliveries.live||deliveries.dh);
   const pickupOption=city?`<button onclick="closeModal();pickupAction()" ${pickupReady?"":"disabled"}>📦 Pickup</button>`:"";
   const deliverOption=city?`<button onclick="closeModal();deliverAction()" ${deliverReady?"":"disabled"}>📤 Deliver</button>`:"";
@@ -1773,7 +1776,7 @@ function work(){
 function offDutyMenu(){const p=state.players[state.current],trade=state.equipmentEnabled?`<button onclick="equipmentTrade()">🔧 Buy/Sell · 5 hours</button>`:"",stranded=isStranded(p),roadside=`<button class="${stranded?"danger":""}" onclick="roadsideAssistance()" ${stranded?"":'disabled title="Roadside Assistance is not needed"'}>⚠ Roadside Assistance</button>`;openModal(`<h3>Off Duty</h3><div class="choicegrid action-submenu"><button onclick="closeModal();searchLoadBoards()">🔎 Search Loads · 1 hour</button><button onclick="offDutyWait()">⏱ Wait</button>${trade}${roadside}</div><button onclick="closeModal()">Cancel</button>`)}
 function offDutyWait(){const p=state.players[state.current];openModal(`<h3>Wait · Off Duty</h3><p class="small">Current time: <b>${timeLabelFull(p.time)}</b></p><div class="rest-choice"><input id="offDutySlider" type="range" min="0.5" max="9.5" step="0.5" value="0.5" oninput="updateOffDutyPreview(this.value)"><div class="rest-preview"><span id="offDutyDuration">½ hours</span> · Until <span id="offDutyEnd">${timeLabelFull(p.time+.5)}</span></div><button class="primary" onclick="doOffDuty(document.getElementById('offDutySlider').value)">Wait Off Duty</button></div><button onclick="closeModal()">Cancel</button>`)}
 function sleeperBerthMenu(){const p=state.players[state.current];openModal(`<h3>Sleeper Berth</h3><p>Rest 10 hours until <b>${timeLabelFull(p.time+10)}</b> and reset drive time?</p><div class="row"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="doRest()">Sleeper Berth · 10 Hours</button></div>`)}
-function equipmentTrade(){openModal(`<h3>Buy/Sell Equipment</h3><p>Spend <b>5 hours</b> managing equipment?</p><div class="row"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="confirmEquipmentTrade()">Confirm · 5 Hours</button></div>`)}
+function equipmentTrade(){openModal(`${moduleDialogTitle("equipment","Buy/Sell Equipment")}<p>Spend <b>5 hours</b> managing equipment?</p><div class="row"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="confirmEquipmentTrade()">Confirm · 5 Hours</button></div>`)}
 function confirmEquipmentTrade(){const p=state.players[state.current];createUndo("Buy/Sell equipment");spend(p,5,"equipmentTrade");recordGameEvent("equipment_trade",{location:positionLabel(p),hours:5});closeModal();nextPlayer();render()}
 function renderTabs(){
   const p=state.players[state.current];
@@ -1848,7 +1851,7 @@ function renderMarket(){
           return `<div class="compact-load ${selected?"selected":""} ${expanded?"expanded":""}" onclick="toggleLoadCard('${l.id}')">
             <div class="compact-load-main">
               <div class="freight-inline">
-                <span class="lane">${loadRouteMarkup(l)} <span class="dest-market">(${esc(regionAbbreviation(regionForCity(l.destination)))})</span></span>
+                <span class="lane">${loadRouteMarkup(l)}</span>
                 <button class="route-mini" onclick="event.stopPropagation();previewLoadRoute('${l.id}')">${state.routePreview&&state.routePreview.loadId===l.id?"Hide Route":"Route"}</button>
                 <span class="quick-stat">${l.miles||l.segments*50} mi</span>
                 <span class="quick-stat">${repDisplay(l.reward,{compact:true})}</span>
@@ -1856,7 +1859,7 @@ function renderMarket(){
               </div>
             </div>
             <div class="compact-load-detail" onclick="event.stopPropagation()">
-              <div class="detail-route">${loadRouteMarkup(l)} <span class="dest-market">(${esc(regionAbbreviation(regionForCity(l.destination)))})</span></div>
+              <div class="detail-route">${loadRouteMarkup(l)}</div>
               <div class="detail-meta">
                 ${esc(l.commodity)}<br>
                 ${esc(l.equipment)} · ${l.miles||l.segments*50} miles · ${repDisplay(l.reward,{compact:true})}
@@ -1904,11 +1907,7 @@ function renderTop() {
     document.getElementById("topstats").innerHTML=`<button class="primary" onclick="setup()">New Game</button><button class="undo-btn" disabled>↶ Undo</button>`;
     return;
   }
-  const p=state.players[state.current];
-  document.getElementById("topstats").innerHTML=`<span class="stat">Current <b style="color:${p.color}">${esc(p.name)}</b></span>
-    <span class="stat">Clock <b>${timeLabel(p.time)}</b></span>
-    <span class="stat">${repDisplay(p.reputation,{compact:true})}</span>
-    <button onclick="setup()">Restart</button>
+  document.getElementById("topstats").innerHTML=`<button onclick="setup()">Restart</button>
     <button class="undo-btn" onclick="undoLastAction()" ${state.undoSnapshot?"":"disabled"}>↶ ${state.undoSnapshot?"Undo "+esc(state.undoLabel):"Undo"}</button>`;
 }
 
@@ -2213,16 +2212,10 @@ function renderPlayerStatus(){
     return;
   }
   box.innerHTML=state.players.map((p,i)=>{
-    const completed=(p.completed||[]).length;
     return `<div class="player-status ${i===state.current?"active":""}" style="border-left-color:${p.color}">
-      <div class="row">
-        <span class="ps-name" style="color:${p.color}">${esc(p.name)}</span>
-        ${repDisplay(`${p.reputation}/${state.repTarget}`,{compact:true})}
-      </div>
-      <div class="ps-grid">
-        <span>Completed loads</span><b>${completed}</b>
-        <span>Total elapsed time</span><b>${hoursLabel(elapsedTime(p))}h</b>
-        <span class="ps-location">📍 ${esc(positionLabel(p))}</span>
+      <div class="player-status-head">
+        <div class="player-status-main"><span class="ps-name" style="color:${p.color}">${esc(p.name)}</span><span class="ps-location">📍 ${esc(positionLabel(p))}</span><span class="ps-current-time">${timeLabelFull(p.time)}</span></div>
+        <div class="player-status-rep">${repDisplay(`${p.reputation}/${state.repTarget}`,{large:true})}</div>
       </div>
     </div>`;
   }).join("");
@@ -2431,7 +2424,7 @@ function renderHtmlLabels(){
     for(const ts of SERVICE_NODES){
       const q=routeMidpoint(ts.route[0],ts.route[1],ts.fraction),pc=mapToScreenPercent(q[0],q[1]);
       if(pc[0]<-10||pc[0]>110||pc[1]<-10||pc[1]>110) continue;
-      out+=`<div class="map-html-label truckstop" title="Fuel · Rest · Overnight parking" style="left:${pc[0]}%;top:${pc[1]}%">${esc(ts.name)} · ⛽ 🅿</div>`;
+      out+=`<div class="map-html-label truckstop" title="Fuel · Rest · Overnight parking" style="left:${pc[0]}%;top:${pc[1]}%">${esc(ts.name)} · ${fuelGlyph()} 🅿</div>`;
     }
   }
   if(state.started){
@@ -2530,23 +2523,25 @@ function capacityCubes(n){
 function equipmentHtml(p){
   const load=p.active;
   const personalAttached=personalTrailerWithPlayer(p);
-  const personalLoaded=!!load;
-  const trailerState=p.dhActive
-    ? `${vehicleArt("trailer","#7a828a","dashboard-trailer-art")}<div class="eq-label">D/H ROUND TRIP</div><div class="eq-status">${p.dhActive.phase==="return"?"Empty return":"Loaded outbound · 5/5 units"}</div><div class="trailer-load">${esc(p.dhActive.shipPoint)} ⇄ <b>${esc(p.dhActive.turnaround)}</b><br>${p.dhActive.reward} REP paid on return</div>`
-    : personalAttached
-      ? `${vehicleArt("trailer",p.color,"dashboard-trailer-art")}<div class="eq-label">OWNED TRAILER</div><div class="eq-status">${personalLoaded?"Loaded · 5/5 units":"Empty · 0/5 units"} · Attached</div>${load?`<div class="trailer-load">${esc(load.origin)} → <b>${esc(load.destination)}</b><br>${esc(load.commodity)}</div>`:""}`
-      : `<div class="eq-icon">—</div><div class="eq-label">BOBTAIL</div><div class="eq-status">Owned trailer: ${esc(p.personalTrailerLocation||"—")}</div>`;
+  const units=p.dhActive?(p.dhActive.phase==="return"?0:5):(load?loadUnits(load):0);
+  const loadState=units===0?"Empty":units===5?"Full":"Partial";
+  const trailerStatus=p.dhActive?"Contracted Drop/Hook":"Owned";
+  const trailerNote=p.dhActive
+    ? `${esc(p.dhActive.shipPoint)} ⇄ <b>${esc(p.dhActive.turnaround)}</b> · ${repDisplay(p.dhActive.reward,{compact:true,suffix:"on return"})}`
+    : load?`${esc(load.origin)} → <b>${esc(load.destination)}</b> · ${esc(load.commodity)}`:"";
+  const trailerCard=personalAttached||p.dhActive
+    ? `<div class="eq-slot trailer-card"><div class="eq-card-title">Trailer</div><div class="eq-art-line">${vehicleArt("trailer",p.dhActive?"#7a828a":p.color,"dashboard-trailer-art")}</div><dl class="eq-specs"><dt>Type:</dt><dd>Dry Van</dd><dt>Status:</dt><dd>${trailerStatus}</dd><dt>Load:</dt><dd class="eq-load-state">${units}/5 Units · ${loadState}</dd></dl>${trailerNote?`<div class="trailer-load">${trailerNote}</div>`:""}</div>`
+    : `<div class="eq-slot no-trailer-card">NO TRAILER<br>ATTACHED</div>`;
   return `<div class="equipment-board">
     <div class="equipment-title">Equipment</div>
     <div class="equipment-chain">
-      <div class="eq-slot">${vehicleArt("tractor",p.color,"dashboard-tractor-art")}<div class="eq-label">OWNED TRACTOR</div></div>
-      <div class="rig-arrow">→</div>
-      <div class="eq-slot ${!personalAttached&&!p.dhActive?"disconnected":""}">${trailerState}</div>
+      <div class="eq-slot power-card"><div class="eq-card-title">Power</div><div class="eq-art-line">${vehicleArt("tractor",p.color,"dashboard-tractor-art")}</div><dl class="eq-specs"><dt>Type:</dt><dd>Road Tractor</dd><dt>Status:</dt><dd>Owned</dd><dt>Engine:</dt><dd>450 HP · 1,650 lb-ft</dd><dt>Tank Size:</dt><dd>200 Gal</dd><dt>MPG:</dt><dd>8.0</dd></dl></div>
+      ${trailerCard}
     </div>
     <div class="module-strip">
-      ${state.fuelEnabled?`<div class="module-enabled ${rangeMiles(p)<=50?"fuel-critical":rangeMiles(p)<=250?"fuel-warning":""}">${moduleIcon("fuel")}${esc((p.powertrain||DEFAULT_POWERTRAIN).energyType)}<br>${Math.round(p.energy??DEFAULT_POWERTRAIN.capacity)}/${(p.powertrain||DEFAULT_POWERTRAIN).capacity} ${(p.powertrain||DEFAULT_POWERTRAIN).unit} · ${rangeMiles(p)} mi range</div>`:`<div class="module-disabled">${moduleIcon("fuel")}Fuel<br>Module Off</div>`}
-      ${state.equipmentEnabled?`<div class="module-enabled">🔧 Equipment<br>Module On</div>`:`<div class="module-disabled">🔧 Equipment<br>Module Off</div>`}
-      <div class="module-disabled">★ Badge<br>Module Off</div>
+      ${state.fuelEnabled?`<div class="module-enabled ${rangeMiles(p)<=50?"fuel-critical":rangeMiles(p)<=250?"fuel-warning":""}">${moduleIcon("fuel")}Diesel<br>${Math.round(p.energy??DEFAULT_POWERTRAIN.capacity)}/${(p.powertrain||DEFAULT_POWERTRAIN).capacity} ${(p.powertrain||DEFAULT_POWERTRAIN).unit} · ${rangeMiles(p)} mi range</div>`:`<div class="module-disabled"><span class="rating-title">${moduleIcon("fuel")}Diesel</span>Module Off</div>`}
+      <div class="module-disabled"><span class="rating-title">🔧 Maintenance Rating</span>Module Off</div>
+      <div class="module-disabled"><span class="rating-title">⬟ Compliance Rating</span>Module Off</div>
     </div>
   </div>`;
 }
@@ -2568,7 +2563,7 @@ function regionAbbreviation(region){return {"Northwest":"NW","Southwest":"SW","N
 function regionTextColor(city){return {"Northwest":"#f28c28","Southwest":"#ef4444","North Central":"#f2d34f","South Central":"#43c463","Northeast":"#4a90e2","Southeast":"#a66be0"}[regionForCity(city)]||"#fff"}
 function cityMarkup(city,extraClass=""){return `<span class="${extraClass}" style="color:${regionTextColor(city)}">${esc(city)}</span>`}
 function loadRouteMarkup(load,originClass="",destinationClass=""){
-  const hours=true;
+  const hours=state.customersEnabled;
   return `<span class="load-route-inline"><span class="customer-city-block">${cityMarkup(load.origin,originClass)}${hours?`<span class="customer-time-under">${scheduleLabel(customerSchedule(load,"pickup"))}</span>`:""}</span><span class="load-route-arrow">→</span><span class="customer-city-block">${cityMarkup(load.destination,destinationClass)}${hours?`<span class="customer-time-under">${scheduleLabel(customerSchedule(load,"delivery"))}</span>`:""}</span></span>`;
 }
 function toggleRegions(){}
@@ -2601,7 +2596,7 @@ function renderRegisteredMapOverlay(){
   }
   if(SERVICE_NODES.length) for(const ts of SERVICE_NODES){
     const q=routeMidpoint(ts.route[0],ts.route[1],ts.fraction),pt=worldToPanelPixels(q[0],q[1]);
-    labels+=`<div class="map-html-label truckstop" title="Fuel · Rest · Overnight parking" style="left:${pt[0]}px;top:${pt[1]-14}px">${esc(ts.name)} · ⛽ 🅿</div>`;
+    labels+=`<div class="map-html-label truckstop" title="Fuel · Rest · Overnight parking" style="left:${pt[0]}px;top:${pt[1]-14}px">${esc(ts.name)} · ${fuelGlyph()} 🅿</div>`;
   }
   interstateLabelPoints().forEach(it=>{
     const pt=worldToPanelPixels(it.q[0],it.q[1]);
@@ -2686,14 +2681,14 @@ function downloadCsv(filename,rows){
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 function downloadGameLog(){
-  downloadCsv(`Big Rig V4.7 - Game Log - ${state.sessionId}.csv`,state.gameLog||[]);
+  downloadCsv(`Big Rig V4.9 - Game Log - ${state.sessionId}.csv`,state.gameLog||[]);
 }
 function gameSummaryRows(){
   const modules=enabledModulesLabel();
-  return state.players.map((p,i)=>{const elapsed=elapsedTime(p);return {session_id:state.sessionId,version:"Big Rig V4.7",started_at:state.sessionStartedAt,finished_at:new Date().toISOString(),modules,player_count:state.players.length,target_rep:state.repTarget,player_number:i+1,player_name:p.name,final_rep:p.reputation,total_elapsed_hours:elapsed,completed_loads:(p.completed||[]).length,rep_per_hour:elapsed?(p.reputation/elapsed).toFixed(3):"",booked_loads_remaining:p.booked.length,active_load_remaining:p.active||p.dhActive?1:0};});
+  return state.players.map((p,i)=>{const elapsed=elapsedTime(p);return {session_id:state.sessionId,version:"Big Rig V4.9",started_at:state.sessionStartedAt,finished_at:new Date().toISOString(),modules,player_count:state.players.length,target_rep:state.repTarget,player_number:i+1,player_name:p.name,final_rep:p.reputation,total_elapsed_hours:elapsed,completed_loads:(p.completed||[]).length,rep_per_hour:elapsed?(p.reputation/elapsed).toFixed(3):"",booked_loads_remaining:p.booked.length,active_load_remaining:p.active||p.dhActive?1:0};});
 }
 function downloadGameSummary(){
-  downloadCsv(`Big Rig V4.7 - Game Summary - ${state.sessionId}.csv`,gameSummaryRows());
+  downloadCsv(`Big Rig V4.9 - Game Summary - ${state.sessionId}.csv`,gameSummaryRows());
 }
 
 function checkGameEnd(){
@@ -2765,16 +2760,16 @@ function render(){
 }
 
 function showRules(){
-  openModal(`<h3>Big Rig V4.7 — Reputation & Compact Card Rules</h3>
+  openModal(`<h3>Big Rig V4.9 — Modular Dialogs & Dashboard Rules</h3>
   <div class="small" style="line-height:1.55">
   <p><b>Movement:</b> Distance and time are separate resources. Declare a destination, pay its required driving time and range, then resolve movement. Each route segment is 50 miles and normally costs 1 driving hour. A driver may drive up to 11 hours before taking a 10-hour reset. Completing all 11 driving hours earns one immediate additional 50-mile segment at no time cost, once per Tour of Duty.</p>
   <p><b>Fuel:</b> The dashboard displays remaining range. Fuel is available in every city and at marked service nodes. A Fuel action costs 30 minutes and fills the truck to maximum; partial fueling and fuel prices are not used.</p>
   <p><b>Driver Log Actions:</b> OFF DUTY contains Search Loads and adjustable Wait. SLEEPER BERTH performs the 10-hour reset. DRIVING opens route selection. ON DUTY contains Fuel, Pickup, and Deliver; unavailable freight actions remain visible but dimmed.</p>
   <p><b>Roadside Assistance:</b> When a truck has 0 range away from a city or fueling landmark, OFF DUTY displays a warning regardless of remaining drive time. A driver with REP loses 1 REP; a driver already at 0 REP may still use assistance without going negative. Tow to the nearest city or fueling landmark; ties allow a choice. Towing costs 3 hours plus 2 hours per 50-mile segment.</p>
   <p><b>Round-Trip Drop & Hook:</b> A D/H load begins only at its printed origin ship point. Haul the loaded trailer outbound, spend the normal ½-hour handling time at the turnaround, return empty to the ship point, and spend the normal ½-hour handling time again. REP is paid only after return. The D/H slot remains occupied and the load cannot be canceled after starting.</p>
-  <p><b>Customers:</b> Live-load pickup and delivery actions may begin only while that load's customer is open. Customer schedules are Standard (8 AM–5 PM), Early (6 AM–2 PM), or Late (12 PM–8 PM). Drop & Hook facilities remain open 24/7. Service may finish after closing once it has begun.</p>
+  <p><b>Customers:</b> With this module off, live-load customers are available 24/7, their hours are hidden digitally, and pickup/delivery each cost a fixed 1 hour without a dwell dialog. With Customers active, schedules become visible hard gates (Standard 8 AM–5 PM, Early 6 AM–2 PM, or Late 12 PM–8 PM) and the Customers dwell die varies live loading and unloading time. Drop & Hook facilities remain open 24/7.</p>
   <p><b>Appointments:</b> About 20% of live-load cards require a shipper appointment, receiver appointment, or both. Each required appointment is requested after booking with its own colored die displaying the rolled one-hour-increment time, constrained to that customer's printed hours. When both are required, confirm the shipper result before requesting the receiver result. The player may cancel for −1 REP during the request sequence, but REP cannot fall below 0. Attempting service early or late within customer hours displays the appointment, current time, immediate and accumulated penalties, and projected payout before the player may proceed or use the existing adjustable Off Duty wait action.</p>
-  <p><b>Card Ownership:</b> Compact Load Board, booked-load, and active-load views hide module and resource icons to preserve space. Expanding or opening a load reveals the complete icon strip and its future badge/wrench resources. Only the module that introduced the card is illuminated; Core cards remain Core when Customers or Appointment Times changes how they are used.</p>
+  <p><b>Card Ownership:</b> Compact Load Board, booked-load, and active-load views hide module and resource icons to preserve space. Expanding or opening a load reveals the complete icon strip and its future badge/wrench resources. Only the module that introduced the card is illuminated; Core cards remain Core when Customers or Appointments changes how they are used.</p>
   <p><b>Rest:</b> Sleeper Berth advances 10 hours and resets drive time and the 550-mile bonus. Off Duty advances ½–9½ hours without resetting either. Waiting uses this existing Rest action and its return-time preview. Core elapsed-time turn order applies after each action. Cities/customers and marked service nodes allow overnight parking; gray route nodes are emergency-only stopping locations reserved for a future penalty system.</p>
   <p><b>Turns:</b> The player with the lowest absolute elapsed time is active.</p>
   <p><b>Setup:</b> Player order is randomized. Each player starts in the pickup city from a random Load Card draw; duplicate starting cities are redrawn. Setup cards are returned before the Freight Market is populated.</p><p><b>Loads:</b> Freight is divided into six origin regions. Each region displays one load per player. Booking is free and immediately refills that region. A player may hold a maximum of 3 booked loads; an active load does not count against this limit.</p><p><b>Search:</b> Search Load Board costs 1 hour. The persistent regional board enters selection mode; select any number of visible cards across any regions, then confirm to replace them simultaneously.</p>
@@ -2801,7 +2796,7 @@ function setup(){
       <label class="module-choice"><input id="dropHooksEnabled" type="checkbox" checked><b>Drop &amp; Hooks ${moduleIcon("dh")}</b><span class="module-status ready">Ready</span></label>
       <label class="module-choice"><input id="customersEnabled" type="checkbox" checked><b>Customers ${moduleIcon("customers")}</b><span class="module-status ready">Ready</span></label>
       <label class="module-choice"><input id="fuelEnabled" type="checkbox" checked><b>Fuel ${moduleIcon("fuel")}</b><span class="module-status ready">Ready</span></label>
-      <label class="module-choice"><input id="appointmentsEnabled" type="checkbox" checked><b>Appointment Times ${moduleIcon("appointments")}</b><span class="module-status ready">Ready</span></label>
+      <label class="module-choice"><input id="appointmentsEnabled" type="checkbox" checked><b>Appointments ${moduleIcon("appointments")}</b><span class="module-status ready">Ready</span></label>
       <label class="module-choice unavailable"><input type="checkbox" disabled><b>Weather</b><span class="module-status progress">In Progress</span></label>
       <label class="module-choice unavailable"><input id="equipmentEnabled" type="checkbox" disabled><b>Equipment</b><span class="module-status progress">In Progress</span></label>
       <label class="module-choice unavailable"><input type="checkbox" disabled><b>Safety &amp; Maintenance</b><span class="module-status progress">In Progress</span></label>
