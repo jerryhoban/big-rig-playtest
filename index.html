@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Big Rig V5.01 — Dashboard Stack Playtest</title>
+<title>Big Rig V5.03 — Readability & Load Cards Playtest</title>
 <style>
 :root {
   --bg:#0e1116; --panel:#171c24; --panel2:#202733; --line:#303a49;
@@ -1108,7 +1108,7 @@ function makeSessionId(){
 function recordGameEvent(action,details={}){
   if(!state.sessionId)return;
   const p=state.players[state.current]||null;
-  state.gameLog.push({sequence:state.gameLog.length+1,recorded_at:new Date().toISOString(),session_id:state.sessionId,version:"Big Rig V5.01",day:state.sharedDay||1,player_number:p?state.current+1:"",player_name:p?p.name:"",player_elapsed_hours:p?elapsedTime(p):"",game_clock:p?timeLabel(p.time):"",action,...details});
+  state.gameLog.push({sequence:state.gameLog.length+1,recorded_at:new Date().toISOString(),session_id:state.sessionId,version:"Big Rig V5.03",day:state.sharedDay||1,player_number:p?state.current+1:"",player_name:p?p.name:"",player_elapsed_hours:p?elapsedTime(p):"",game_clock:p?timeLabel(p.time):"",action,...details});
 }
 function activityText(e){
   const who=e.player_name||`Player ${e.player_number||""}`,hours=hoursLabel(Number(e.hours)||0);
@@ -1612,18 +1612,14 @@ function bookedLoadClick(id){
   if(!l)return;
   const c=playerCity(p);
   if(c===l.origin){pickupAction();return;}
-  openModal(`<h3>Booked Load</h3><p><b>${loadRouteMarkup(l)}</b></p><p>${esc(l.commodity)} · ${esc(l.equipment)} · ${repDisplay(l.reward)}</p>${appointmentBadge(l)}${loadCardFooter(l)}
-    <button onclick="closeModal();previewLoadRoute('${l.id}')">Show Route</button>
-    <button onclick="closeModal()">Close</button>`);
+  openModal(fullLoadCardHtml(l,"pickup",p));
 }
 function activeLoadClick(){
   const p=state.players[state.current], l=p.dhActive||p.active;
   if(!l)return;
   const c=playerCity(p),target=p.dhActive?(l.phase==="outbound"?l.turnaround:l.shipPoint):l.destination;
   if(c===target){deliverAction();return;}
-  openModal(`<h3>Active Load</h3><p><b>${p.dhActive&&l.phase==="return"?"Return":"Deliver"} in ${esc(target)}</b></p><p>${p.dhActive?`${esc(l.shipPoint)} ⇄ ${esc(l.turnaround)}`:`${loadRouteMarkup(l)}`} · ${repDisplay(l.reward)}</p>${p.active?appointmentBadge(l):""}${loadCardFooter(p.dhActive?{...l,type:"DropHook"}:l)}
-    <button onclick="closeModal();previewLoadRoute('${l.id}')">Show Route</button>
-    <button onclick="closeModal()">Close</button>`);
+  openModal(fullLoadCardHtml(l,p.dhActive?(l.phase==="return"?"return":"deliver"):"deliver",p));
 }
 function loadActive() {
   if(state.finished) return;
@@ -1751,7 +1747,7 @@ function sleeperBerthMenu(){const p=state.players[state.current];openModal(`<h3>
 function equipmentTrade(){openModal(`${moduleDialogTitle("equipment","Buy/Sell Equipment")}<p>Spend <b>5 hours</b> managing equipment?</p><div class="row"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="confirmEquipmentTrade()">Confirm · 5 Hours</button></div>`)}
 function confirmEquipmentTrade(){const p=state.players[state.current];createUndo("Buy/Sell equipment");spend(p,5,"equipmentTrade");recordGameEvent("equipment_trade",{location:positionLabel(p),hours:5});closeModal();nextPlayer();render()}
 function bookedLoadsCondensedHtml(p){return p.booked.length?p.booked.map(l=>`<div class="current-load-card load-state-pickup load-clickable" onclick="bookedLoadClick('${l.id}')"><div class="load-state-tag">PICKUP</div><div class="load-title">${loadRouteMarkup(l,"pickup-city","")}</div><div class="load-meta">${esc(l.commodity)} · ${esc(l.equipment)} · ${repDisplay(l.reward,{compact:true})}</div>${appointmentBadge(l)}<div class="load-card-actions"><button class="load-map-btn" onclick="event.stopPropagation();previewLoadRoute('${l.id}')">🗺 Route</button><button class="load-map-btn cancel-load-btn" onclick="event.stopPropagation();cancelBookedLoad('${l.id}')" ${p.reputation<=0?'disabled title="Requires 1 REP"':''}>Cancel Load</button></div></div>`).join(""):`<div class="small">No booked loads.</div>`}
-function dashboardHeaderHtml(p,i,expanded){return `<div class="driver-dashboard-head"><div><div class="driver-dashboard-title">DRIVER DASHBOARD</div><div class="driver-dashboard-player">${esc(p.name)} · ${esc(positionLabel(p))}${playerCity(p)?` · ${esc(regionForCity(playerCity(p)))}`:""}</div></div><div class="dashboard-header-rep"><span class="player-rep-label">REP</span>${repDisplay(p.reputation,{large:true})}<span class="rep-target-suffix">/${state.repTarget}</span></div></div>`}
+function dashboardHeaderHtml(p,i,expanded){let driverName=(p.name||`PLAYER ${i+1}`).trim()||`PLAYER ${i+1}`;if(/^player\s+\d+$/i.test(driverName))driverName=driverName.toUpperCase();return `<div class="driver-dashboard-head"><div class="driver-dashboard-title">${esc(driverName)}</div><div class="driver-dashboard-player"><span class="dashboard-location-pin" aria-hidden="true">📍</span> ${esc(positionLabel(p))}${playerCity(p)?` · ${esc(regionForCity(playerCity(p)))}`:""}</div><div class="dashboard-header-rep"><span class="player-rep-label">REP</span>${repDisplay(p.reputation,{large:true})}<span class="rep-target-suffix">/${state.repTarget}</span></div></div>`}
 function driverLogHtml(p){const driveState=remainingDrive(p)<=0?"duty-critical":remainingDrive(p)<=2?"duty-warning":"duty-neutral";return `<div class="driver-log-lines"><div><b>Current Time:</b> <span>${timeLabelFull(p.time)}</span></div><div><b>Drive Time Remaining:</b> <span class="${driveState}">${hoursLabel(remainingDrive(p))} Hours</span></div><div><b>14-Hour Rule Remaining:</b> <span>NA</span></div></div>`}
 function renderTabs(){
   const root=document.getElementById("tabcontent");
@@ -2475,12 +2471,12 @@ function equipmentHtml(p){
     ? `${esc(p.dhActive.shipPoint)} ⇄ <b>${esc(p.dhActive.turnaround)}</b> · ${repDisplay(p.dhActive.reward,{compact:true,suffix:"on return"})}`
     : load?`${esc(load.origin)} → <b>${esc(load.destination)}</b> · ${esc(load.commodity)}`:"";
   const trailerCard=personalAttached||p.dhActive
-    ? `<div class="eq-slot trailer-card"><div class="eq-card-title">Trailer</div><div class="eq-art-line">${vehicleArt("trailer",p.dhActive?"#7a828a":p.color,"dashboard-trailer-art")}${trailerCargoOverlay(units)}</div><dl class="eq-specs"><dt>Type:</dt><dd>Dry Van</dd><dt>Status:</dt><dd>${trailerStatus}</dd><dt>Load:</dt><dd class="eq-load-state">${units}/5 Units · ${loadState}</dd></dl>${trailerNote?`<div class="trailer-load">${trailerNote}</div>`:""}</div>`
+    ? `<div class="eq-slot trailer-card"><div class="eq-card-title">Trailer</div><div class="eq-art-line">${vehicleArt("trailer",p.dhActive?"#7a828a":p.color,"dashboard-trailer-art")}${trailerCargoOverlay(units)}</div><div class="eq-compact-specs"><div>Dry Van · ${trailerStatus}</div><div class="eq-load-state">${units}/5 Units · ${loadState}</div></div>${trailerNote?`<div class="trailer-load">${trailerNote}</div>`:""}</div>`
     : `<div class="eq-slot no-trailer-card">NO TRAILER<br>ATTACHED</div>`;
   return `<div class="equipment-board">
     <div class="equipment-title">Equipment</div>
     <div class="equipment-chain">
-      <div class="eq-slot power-card"><div class="eq-card-title">Power</div><div class="eq-art-line">${vehicleArt("tractor",p.color,"dashboard-tractor-art")}</div><dl class="eq-specs"><dt>Type:</dt><dd>Road Tractor</dd><dt>Status:</dt><dd>Owned</dd><dt>Engine:</dt><dd>450 HP · 1,650 lb-ft</dd><dt>Tank Size:</dt><dd>200 Gal</dd><dt>MPG:</dt><dd>8.0</dd></dl></div>
+      <div class="eq-slot power-card"><div class="eq-card-title">Power</div><div class="eq-art-line">${vehicleArt("tractor",p.color,"dashboard-tractor-art")}</div><div class="eq-compact-specs"><div>Road Tractor · Owned</div><div>450 HP · 1,650 lb-ft</div><div>200 Gal · 8.0 MPG</div></div></div>
       ${trailerCard}
       ${activeEquipmentLoadHtml(p)}
     </div>
@@ -2635,14 +2631,14 @@ function downloadCsv(filename,rows){
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 function downloadGameLog(){
-  downloadCsv(`Big Rig V5.01 - Game Log - ${state.sessionId}.csv`,state.gameLog||[]);
+  downloadCsv(`Big Rig V5.03 - Game Log - ${state.sessionId}.csv`,state.gameLog||[]);
 }
 function gameSummaryRows(){
   const modules=enabledModulesLabel();
-  return state.players.map((p,i)=>{const elapsed=elapsedTime(p);return {session_id:state.sessionId,version:"Big Rig V5.01",started_at:state.sessionStartedAt,finished_at:new Date().toISOString(),modules,player_count:state.players.length,target_rep:state.repTarget,player_number:i+1,player_name:p.name,final_rep:p.reputation,total_elapsed_hours:elapsed,completed_loads:(p.completed||[]).length,rep_per_hour:elapsed?(p.reputation/elapsed).toFixed(3):"",booked_loads_remaining:p.booked.length,active_load_remaining:p.active||p.dhActive?1:0};});
+  return state.players.map((p,i)=>{const elapsed=elapsedTime(p);return {session_id:state.sessionId,version:"Big Rig V5.03",started_at:state.sessionStartedAt,finished_at:new Date().toISOString(),modules,player_count:state.players.length,target_rep:state.repTarget,player_number:i+1,player_name:p.name,final_rep:p.reputation,total_elapsed_hours:elapsed,completed_loads:(p.completed||[]).length,rep_per_hour:elapsed?(p.reputation/elapsed).toFixed(3):"",booked_loads_remaining:p.booked.length,active_load_remaining:p.active||p.dhActive?1:0};});
 }
 function downloadGameSummary(){
-  downloadCsv(`Big Rig V5.01 - Game Summary - ${state.sessionId}.csv`,gameSummaryRows());
+  downloadCsv(`Big Rig V5.03 - Game Summary - ${state.sessionId}.csv`,gameSummaryRows());
 }
 
 function checkGameEnd(){
@@ -2714,7 +2710,7 @@ function render(){
 }
 
 function showRules(){
-  openModal(`<h3>Big Rig V5.01 — Dashboard Stack Rules</h3>
+  openModal(`<h3>Big Rig V5.03 — Readability & Load Card Rules</h3>
   <div class="small" style="line-height:1.55">
   <p><b>Movement:</b> Distance and time are separate resources. Declare a destination, pay its required driving time and range, then resolve movement. Each route segment is 50 miles and normally costs 1 driving hour. A driver may drive up to 11 hours before taking a 10-hour reset. Completing all 11 driving hours earns one immediate additional 50-mile segment at no time cost, once per Tour of Duty.</p>
   <p><b>Fuel:</b> The dashboard displays remaining range. Fuel is available in every city and at marked service nodes. A Fuel action costs 30 minutes and fills the truck to maximum; partial fueling and fuel prices are not used.</p>
@@ -2774,6 +2770,60 @@ function buildStartFields() {
 }
 window.addEventListener("resize",scheduleRegisteredOverlay);
 render();
+</script>
+
+<style id="v502-styles">
+/* Keep both depth layers synchronized with the current regional palette. */
+.region-board.region-south-central{background:linear-gradient(135deg,rgba(139,95,191,.65),rgba(14,17,22,.75))!important;border-top-color:#8b5fbf!important}
+.region-board.region-southeast{background:linear-gradient(135deg,rgba(50,183,197,.65),rgba(14,17,22,.75))!important;border-top-color:#32b7c5!important}
+.region-board.region-south-central>h3{color:#8b5fbf!important}.region-board.region-southeast>h3{color:#32b7c5!important}
+
+/* Compact, balanced player header. */
+.driver-dashboard-head{display:grid!important;grid-template-columns:minmax(100px,1fr) minmax(180px,1.5fr) minmax(100px,1fr);align-items:center;gap:8px;min-height:48px!important;padding:6px 10px!important}
+.driver-dashboard-title{font-size:15px;font-weight:950;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#080b0e}
+.driver-dashboard-player{text-align:center!important;font-size:12px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#080b0e!important}
+.dashboard-location-pin{font-size:10px;color:#080b0e}
+.dashboard-header-rep{justify-self:end}
+.collapsed-dashboard .driver-dashboard-head{min-height:39px!important}
+
+/* A stable 25 / 25 / 50 equipment row, including tablet widths. */
+.equipment-chain{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,2fr)!important;gap:6px!important;align-items:stretch}
+.equipment-chain .eq-slot{min-height:184px!important;height:184px;padding:7px!important;overflow:hidden}
+.eq-art-line{height:57px!important;margin:3px -2px 5px!important;flex:0 0 57px}
+.power-card .dashboard-tractor-art{width:116px!important;height:56px!important;object-fit:contain}
+.trailer-card .dashboard-trailer-art{width:150px!important;height:56px!important;object-fit:contain}
+.eq-compact-specs{display:grid;gap:3px;font-size:10px;line-height:1.2;text-align:left}.eq-compact-specs>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.eq-compact-specs .eq-load-state{font-weight:950}
+.active-equipment-load{max-height:184px!important;overflow:auto!important;overscroll-behavior:contain}
+.active-equipment-load .detail-meta{font-size:10px;line-height:1.25}.active-equipment-load .module-ownership-strip{margin-top:4px}
+.equipment-board{gap:5px}.module-strip{margin-top:5px!important}.active-dashboard-body{padding:0 8px 8px!important}
+.booked-load-scroll{max-height:178px!important;overflow:auto}
+.driver-log-subpanel{min-height:72px!important}
+
+/* Fuel is a route node first; the green pump communicates its service. */
+.service-marker-info{width:24px!important;height:24px!important;padding:2px!important;border:2px solid #cbd3da!important;border-radius:50%!important;background:#f3f5f7!important;box-shadow:0 1px 3px rgba(0,0,0,.55)!important}
+.service-marker-info .service-symbol{width:16px!important;height:16px!important;font-size:14px!important;color:#38b968!important;background:transparent!important}
+.service-marker-info.reachable{filter:drop-shadow(0 0 4px #fff)}
+
+/* Slightly ease back the load-card REP size. */
+.compact-load .rep-star-score,.current-load-card .rep-star-score,.dh-market-card .rep-star-score,.active-equipment-load .rep-star-score{font-size:16.5px!important}
+
+@media(max-width:1250px){
+  .equipment-chain{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,2fr)!important}
+  .active-equipment-load{grid-column:auto!important}
+  .dashboard-lower-grid{grid-template-columns:minmax(230px,.8fr) minmax(310px,1.2fr)!important}
+  .active-dashboard{overflow:visible!important}
+  .active-dashboard>.driver-dashboard-head{position:sticky;top:66px;z-index:30;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+}
+@media(max-width:700px){
+  .driver-dashboard-head{grid-template-columns:minmax(80px,1fr) minmax(110px,1.25fr) auto}
+  .equipment-chain{grid-template-columns:1fr 1fr!important}
+  .active-equipment-load{grid-column:1/-1!important;max-height:176px!important}
+  .dashboard-lower-grid{grid-template-columns:1fr!important}
+}
+@media(pointer:coarse){.action-btn,.load-map-btn,.map-controls button{min-height:44px}}
+</style>
+<script id="v502-runtime">
+function showVersionDetail(){openModal(`<h3>Version Detail</h3><div class="version-detail-text"><b>Big Rig V5.02 — Compact Tablet Playtest</b><br><br><b>Included Modules</b><br><span class="module-legend-line">${moduleIcon("core")}<span class="module-name module-core">Core</span></span><br><span class="module-legend-line">${moduleIcon("fuel")}<span class="module-name module-fuel">Fuel</span></span><br><span class="module-legend-line">${moduleIcon("appointments")}<span class="module-name module-appointments">Appointments</span></span><br><span class="module-legend-line">${moduleIcon("dh")}<span class="module-name module-dh">Drop & Hooks</span></span><br><span class="module-legend-line">${moduleIcon("customers")}<span class="module-name module-customers">Customer Hours</span></span><br><br><b>Core Map</b><br>Major Interstate network only<br>Gray node = 1 hour / ~50 miles<br>${fuelGlyph()} = fuel/rest landmark<br>Pinch/wheel to zoom · drag to pan<br>Standard speed: 50 MPH</div><button class="primary" onclick="closeModal()">Close</button>`)}
 </script>
 <div style="padding:8px 12px;color:#8f9baa;font-size:11px;text-align:center">Booking is free. Searching the load boards costs 1 hour.</div>
 <div id="gameOverOverlay" class="game-over-overlay">
@@ -2872,6 +2922,37 @@ function showVersionDetail(){openModal(`<h3>Version Detail</h3><div class="versi
 </style>
 <script id="v501-runtime">
 function showVersionDetail(){openModal(`<h3>Version Detail</h3><div class="version-detail-text"><b>Big Rig V5.01 — Dashboard Stack Playtest</b><br><br><b>Included Modules</b><br><span class="module-legend-line">${moduleIcon("core")}<span class="module-name module-core">Core</span></span><br><span class="module-legend-line">${moduleIcon("fuel")}<span class="module-name module-fuel">Fuel</span></span><br><span class="module-legend-line">${moduleIcon("appointments")}<span class="module-name module-appointments">Appointments</span></span><br><span class="module-legend-line">${moduleIcon("dh")}<span class="module-name module-dh">Drop & Hooks</span></span><br><span class="module-legend-line">${moduleIcon("customers")}<span class="module-name module-customers">Customer Hours</span></span><br><br><b>Core Map</b><br>Major Interstate network only<br>Gray node = 1 hour / ~50 miles<br>${fuelGlyph()} = fuel/rest landmark<br>Pinch/wheel to zoom · drag to pan<br>Standard speed: 50 MPH</div><button class="primary" onclick="closeModal()">Close</button>`)}
+</script>
+<style id="v502-final-styles">
+.region-board.region-south-central{background:linear-gradient(135deg,rgba(139,95,191,.65),rgba(14,17,22,.75))!important;border-top-color:#8b5fbf!important}.region-board.region-southeast{background:linear-gradient(135deg,rgba(50,183,197,.65),rgba(14,17,22,.75))!important;border-top-color:#32b7c5!important}.region-board.region-south-central>h3{color:#8b5fbf!important}.region-board.region-southeast>h3{color:#32b7c5!important}
+.driver-dashboard-head{display:grid!important;grid-template-columns:minmax(100px,1fr) minmax(180px,1.5fr) minmax(100px,1fr);align-items:center;gap:8px;min-height:48px!important;padding:6px 10px!important}.driver-dashboard-title{font-size:15px;font-weight:950;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#080b0e}.driver-dashboard-player{text-align:center!important;font-size:12px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#080b0e!important}.dashboard-location-pin{font-size:10px;color:#080b0e}.dashboard-header-rep{justify-self:end}.collapsed-dashboard .driver-dashboard-head{min-height:39px!important}
+.equipment-chain{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,2fr)!important;gap:6px!important;align-items:stretch}.equipment-chain .eq-slot{min-height:184px!important;height:184px;padding:7px!important;overflow:hidden}.eq-art-line{height:57px!important;margin:3px -2px 5px!important;flex:0 0 57px}.power-card .dashboard-tractor-art{width:116px!important;height:56px!important;object-fit:contain}.trailer-card .dashboard-trailer-art{width:150px!important;height:56px!important;object-fit:contain}.eq-compact-specs{display:grid;gap:3px;font-size:10px;line-height:1.2;text-align:left}.eq-compact-specs>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.eq-compact-specs .eq-load-state{font-weight:950}.active-equipment-load{max-height:184px!important;overflow:auto!important;overscroll-behavior:contain}.active-equipment-load .detail-meta{font-size:10px;line-height:1.25}.active-equipment-load .module-ownership-strip{margin-top:4px}.equipment-board{gap:5px}.module-strip{margin-top:5px!important}.active-dashboard-body{padding:0 8px 8px!important}.booked-load-scroll{max-height:178px!important}.driver-log-subpanel{min-height:72px!important}
+.service-marker-info{width:24px!important;height:24px!important;padding:2px!important;border:2px solid #cbd3da!important;border-radius:50%!important;background:#f3f5f7!important;box-shadow:0 1px 3px rgba(0,0,0,.55)!important}.service-marker-info .service-symbol{width:16px!important;height:16px!important;font-size:14px!important;color:#38b968!important;background:transparent!important}.service-marker-info.reachable{filter:drop-shadow(0 0 4px #fff)}
+.compact-load .rep-star-score,.current-load-card .rep-star-score,.dh-market-card .rep-star-score,.active-equipment-load .rep-star-score{font-size:16.5px!important}
+@media(max-width:1250px){.equipment-chain{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,2fr)!important}.active-equipment-load{grid-column:auto!important}.dashboard-lower-grid{grid-template-columns:minmax(230px,.8fr) minmax(310px,1.2fr)!important}.active-dashboard{overflow:visible!important}.active-dashboard>.driver-dashboard-head{position:sticky;top:66px;z-index:30;box-shadow:0 3px 8px rgba(0,0,0,.35)}}
+@media(max-width:700px){.driver-dashboard-head{grid-template-columns:minmax(80px,1fr) minmax(110px,1.25fr) auto}.equipment-chain{grid-template-columns:1fr 1fr!important}.active-equipment-load{grid-column:1/-1!important;max-height:176px!important}.dashboard-lower-grid{grid-template-columns:1fr!important}}
+@media(pointer:coarse){.action-btn,.load-map-btn,.map-controls button{min-height:44px}}
+</style>
+<script id="v502-final-runtime">
+function showVersionDetail(){openModal(`<h3>Version Detail</h3><div class="version-detail-text"><b>Big Rig V5.02 — Compact Tablet Playtest</b><br><br><b>Included Modules</b><br><span class="module-legend-line">${moduleIcon("core")}<span class="module-name module-core">Core</span></span><br><span class="module-legend-line">${moduleIcon("fuel")}<span class="module-name module-fuel">Fuel</span></span><br><span class="module-legend-line">${moduleIcon("appointments")}<span class="module-name module-appointments">Appointments</span></span><br><span class="module-legend-line">${moduleIcon("dh")}<span class="module-name module-dh">Drop & Hooks</span></span><br><span class="module-legend-line">${moduleIcon("customers")}<span class="module-name module-customers">Customer Hours</span></span><br><br><b>Core Map</b><br>Major Interstate network only<br>Gray node = 1 hour / ~50 miles<br>${fuelGlyph()} = fuel/rest landmark<br>Pinch/wheel to zoom · drag to pan<br>Standard speed: 50 MPH</div><button class="primary" onclick="closeModal()">Close</button>`)}
+</script>
+<style id="v503-styles">
+header{z-index:1000!important}.modal-back{z-index:3000!important}.mapwrap{isolation:isolate}.active-dashboard>.driver-dashboard-head{z-index:40!important}
+.driver-dashboard-title{color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.75)}
+.driver-dashboard-player{font-size:14px!important;font-weight:400!important;color:#f2f5f8!important;text-shadow:0 1px 2px rgba(0,0,0,.65)}
+.dashboard-location-pin{display:inline-block;font-size:17px!important;line-height:1;color:#e44747!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.75));transform:translateY(1px)}
+.full-load-card{position:relative;border:1px solid #4c5968;border-radius:10px;background:linear-gradient(150deg,#1a222c,#0d1218);overflow:hidden;color:#edf3f8}.full-load-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;padding:12px 12px 5px}.full-load-action{font-size:17px;font-weight:950;letter-spacing:.055em;text-transform:uppercase}.full-load-reward{align-self:start}.full-load-reward .rep-star-image{width:48px!important;height:48px!important}.full-load-reward .rep-star-score{font-size:17px!important}
+.full-load-route{padding:5px 12px 10px;text-align:center}.full-route-cities{display:grid;grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr);align-items:center;gap:5px}.full-route-arrow{color:#9ca9b6;font-size:18px}.full-route-stop{display:flex;flex-direction:column;gap:3px;min-width:0}.full-route-city{font-size:13px;font-weight:400;line-height:1.15}.full-route-hours{font-size:10px;font-weight:400;color:#b9c4cf}.full-route-stop.current .full-route-city{font-size:18px;font-weight:950;color:#fff}.full-route-stop.other .full-route-city{color:#aeb8c3}.full-route-button{min-width:112px;margin-top:9px}.full-load-appointment{margin-top:7px}
+.load-requirements{display:grid;grid-template-columns:27px minmax(0,1fr);padding:0!important;border-top:1px solid rgba(255,255,255,.15);border-bottom:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.035);font-size:11px!important;line-height:1.5}.requirements-rail{writing-mode:vertical-rl;transform:rotate(180deg);display:grid;place-items:center;padding:7px 4px;background:rgba(255,255,255,.05);border-left:1px solid rgba(255,255,255,.12);font-size:9px;font-weight:950;letter-spacing:.08em}.requirements-body{padding:8px 10px}.requirements-line{display:grid;grid-template-columns:92px minmax(0,1fr);gap:6px}.requirements-label{font-weight:950;color:#fff}.requirements-resources{margin-top:6px;display:flex;align-items:center;gap:8px}.requirements-resources>div{display:flex;gap:7px}.requirements-traits{margin-top:4px;color:#ffcf79}
+.full-load-card>.module-ownership-strip,.full-load-modules .module-ownership-strip{padding:7px 10px;margin:0!important;justify-content:center;border-top:0}.full-load-buttons{display:flex;justify-content:flex-end;padding:8px 10px;gap:7px}
+.compact-load-detail .load-requirements{margin-top:7px}.compact-load-detail .requirements-rail{font-size:8px}.compact-load-detail .requirements-line{grid-template-columns:86px minmax(0,1fr)}
+@media(max-width:700px){.driver-dashboard-player{font-size:13px!important}.dashboard-location-pin{font-size:15px!important}.full-load-top{padding:10px 10px 4px}.full-load-route{padding:4px 10px 8px}}
+</style>
+<script id="v503-runtime">
+function loadRequirementsHtml(load){const eq=(load.equipmentRequired||[load.equipment||"Dry Van"]).join(" + "),en=(load.endorsementRequired||[]).join(", ")||load.endorsement||"None",traits=(load.traits||[]).join(" · ");return `<section class="load-requirements"><div class="requirements-rail">REQUIREMENTS</div><div class="requirements-body"><div class="requirements-line"><span class="requirements-label">Equipment:</span><span>${esc(eq)}</span></div><div class="requirements-line"><span class="requirements-label">Endorsements:</span><span>${esc(en)}</span></div><div class="requirements-resources">${loadFutureResources()}</div>${traits?`<div class="requirements-traits">${esc(traits)}</div>`:""}</div></section>`}
+function loadCardFooter(load){return `${loadRequirementsHtml(load)}<div class="full-load-modules">${loadModuleStrip(load)}</div>`}
+function fullLoadCardHtml(load,step,p){const dh=!!p?.dhActive||load.type==="DropHook",returning=step==="return";const action=returning?"RETURN":step==="deliver"?"DELIVER":"PICKUP",commodity=dh?"D/H ROUND TRIP":(load.commodity||"LOAD");const origin=dh?(load.shipPoint||load.origin):load.origin,destination=dh?(load.turnaround||load.destination):load.destination;const currentOrigin=step==="pickup"||returning,currentDestination=!currentOrigin;const pickupHours=dh?"24/7":(state.customersEnabled?scheduleLabel(customerSchedule(load,"pickup")):""),deliveryHours=dh?"24/7":(state.customersEnabled?scheduleLabel(customerSchedule(load,"delivery")):"");const direction=dh?"⇄":"→";const routeLoadId=load.id;const footerLoad=dh?{...load,type:"DropHook",equipmentRequired:load.equipmentRequired||["D/H Dry Van"],endorsementRequired:load.endorsementRequired||[]}:load;return `<article class="full-load-card"><div class="full-load-top"><div class="full-load-action">${action} ${esc(commodity)}</div><div class="full-load-reward">${repDisplay(load.reward,{compact:true})}</div></div><div class="full-load-route"><div class="full-route-cities"><div class="full-route-stop ${currentOrigin?"current":"other"}"><span class="full-route-city">${cityMarkup(origin)}</span>${pickupHours?`<span class="full-route-hours">${pickupHours}</span>`:""}</div><span class="full-route-arrow">${direction}</span><div class="full-route-stop ${currentDestination?"current":"other"}"><span class="full-route-city">${cityMarkup(destination)}</span>${deliveryHours?`<span class="full-route-hours">${deliveryHours}</span>`:""}</div></div><button class="full-route-button" onclick="closeModal();previewLoadRoute('${routeLoadId}')">🗺 Route</button>${!dh?`<div class="full-load-appointment">${appointmentBadge(load)}</div>`:""}</div>${loadRequirementsHtml(footerLoad)}<div class="full-load-modules">${loadModuleStrip(footerLoad)}</div><div class="full-load-buttons"><button onclick="closeModal()">Close</button></div></article>`}
+function showVersionDetail(){openModal(`<h3>Version Detail</h3><div class="version-detail-text"><b>Big Rig V5.03 — Readability & Load Cards Playtest</b><br><br><b>Included Modules</b><br><span class="module-legend-line">${moduleIcon("core")}<span class="module-name module-core">Core</span></span><br><span class="module-legend-line">${moduleIcon("fuel")}<span class="module-name module-fuel">Fuel</span></span><br><span class="module-legend-line">${moduleIcon("appointments")}<span class="module-name module-appointments">Appointments</span></span><br><span class="module-legend-line">${moduleIcon("dh")}<span class="module-name module-dh">Drop & Hooks</span></span><br><span class="module-legend-line">${moduleIcon("customers")}<span class="module-name module-customers">Customer Hours</span></span><br><br><b>Core Map</b><br>Major Interstate network only<br>Gray node = 1 hour / ~50 miles<br>${fuelGlyph()} = fuel/rest landmark<br>Pinch/wheel to zoom · drag to pan<br>Standard speed: 50 MPH</div><button class="primary" onclick="closeModal()">Close</button>`)}
 </script>
 </body>
 </html>
