@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Big Rig V5.3 - Sound and Comfort Playtest</title>
+<title>Big Rig V6 - Equipment Playtest</title>
 <style>
 :root {
   --bg:#0e1116; --panel:#171c24; --panel2:#202733; --line:#303a49;
@@ -3268,6 +3268,242 @@ function enhanceFuelStopTargets(){document.querySelectorAll(".service-marker-inf
 const renderRegisteredMapOverlayBeforeFuelTargetFix=renderRegisteredMapOverlay;
 renderRegisteredMapOverlay=function(){renderRegisteredMapOverlayBeforeFuelTargetFix();enhanceFuelStopTargets()};
 enhanceFuelStopTargets();
+</script>
+
+
+<style id="v530-compact-module-setup-styles">
+.available-modules.compact-module-grid{
+  width:80%;
+  margin:12px auto 0;
+  padding-top:9px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px 9px;
+}
+.available-modules.compact-module-grid h4{grid-column:1/-1;margin:0 0 2px}
+.available-modules.compact-module-grid .module-choice,
+.available-modules.compact-module-grid .core-included{
+  min-width:0;
+  min-height:35px;
+  margin:0;
+  padding:5px 7px;
+  grid-template-columns:17px minmax(0,1fr) auto;
+  gap:5px;
+}
+.available-modules.compact-module-grid .core-included{grid-template-columns:17px minmax(0,1fr) auto}
+.available-modules.compact-module-grid b{
+  min-width:0;
+  font-size:10.5px;
+  line-height:1.15;
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+.available-modules.compact-module-grid .module-status{font-size:8px;line-height:1.1;text-align:right}
+.available-modules.compact-module-grid input{width:14px;height:14px}
+.available-modules.compact-module-grid .setup-module-core{color:#fff}
+.available-modules.compact-module-grid .setup-module-fuel{color:#57d37f}
+.available-modules.compact-module-grid .setup-module-dh{color:#ff9d4d}
+.available-modules.compact-module-grid .setup-module-customers{color:#ff79b0}
+.available-modules.compact-module-grid .setup-module-appointments{color:#c58cff}
+.available-modules.compact-module-grid .setup-module-weather{color:#6fc8ff}
+.available-modules.compact-module-grid .setup-module-equipment{color:#aeb7c2}
+.available-modules.compact-module-grid .setup-module-maintenance{color:#ef5d5d}
+.available-modules.compact-module-grid .setup-module-events{color:#f08ac2}
+.available-modules.compact-module-grid .setup-module-ltl{color:#a9d66f}
+.available-modules.compact-module-grid .setup-module-hos{color:#55d6cf}
+.available-modules.compact-module-grid .setup-module-doubles{color:#df9cff}
+.available-modules.compact-module-grid .setup-module-truckstops{color:#8bd36b}
+@media(max-width:560px){
+  .available-modules.compact-module-grid{width:100%;gap:4px 6px}
+  .available-modules.compact-module-grid .module-choice,
+  .available-modules.compact-module-grid .core-included{padding:4px 5px;grid-template-columns:15px minmax(0,1fr) auto}
+  .available-modules.compact-module-grid b{font-size:9.5px}
+  .available-modules.compact-module-grid .module-status{font-size:7px}
+}
+@media(max-width:410px){.available-modules.compact-module-grid{grid-template-columns:1fr}}
+</style>
+<script id="v530-compact-module-setup-runtime">
+const SETUP_MODULE_TONES={
+  "Core Game":"core","Fuel":"fuel","Drop & Hooks":"dh","Customer Hours":"customers",
+  "Appointments":"appointments","Weather":"weather","Equipment":"equipment",
+  "Safety & Maintenance":"maintenance","Events":"events","LTL":"ltl",
+  "Hours of Service":"hos","Doubles":"doubles","Truck Stops":"truckstops"
+};
+function decorateCompactModuleGrid(){
+  const grid=document.querySelector(".available-modules");
+  if(!grid)return;
+  grid.classList.add("compact-module-grid");
+  grid.querySelectorAll(".core-included, .module-choice").forEach(row=>{
+    const name=row.querySelector("b");
+    if(!name)return;
+    const label=name.childNodes[0]?.textContent?.trim()||name.textContent.trim();
+    const tone=SETUP_MODULE_TONES[label];
+    if(tone)name.classList.add("setup-module-"+tone);
+  });
+}
+const setupBeforeCompactModulesV53=setup;
+setup=function(){setupBeforeCompactModulesV53();decorateCompactModuleGrid()};
+</script>
+
+<style id="v600-equipment-styles">
+:root{--equipment:#aeb7c2;--equipment-bright:#d8e1e9;--compliance:#ef5d5d;--maintenance:#ef5d5d}
+.equipment-ready-name{color:var(--equipment)!important}
+.equipment-rating-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%}
+.equipment-rating{padding:7px;border:1px solid #3d4a58;border-radius:7px;background:#141b22;text-align:center;font-size:10px}
+.equipment-rating strong{display:block;color:#fff;font-size:12px}.equipment-rating .rating-meter{display:flex;justify-content:center;gap:3px;margin-top:5px}
+.rating-box{width:15px;height:15px;border:1px solid #647180;border-radius:3px;background:#252d36}.rating-box.available{background:#56798f;border-color:#87b6d0}.rating-box.committed{background:#8c3434;border-color:#ef7777}.rating-box.locked{opacity:.22}
+.out-of-compliance{border-color:#ff4d4d!important;background:rgba(105,15,15,.45)!important;color:#ff8585!important;box-shadow:0 0 10px rgba(255,40,40,.28)}
+.out-of-compliance-label{display:block;margin-top:4px;color:#ff6e6e;font-weight:1000;letter-spacing:.05em}
+.equipment-module-card{position:relative}.equipment-card-module{position:absolute;right:5px;bottom:5px}.equipment-card-module .module-icon{width:18px;height:18px}
+.equipment-spec-name{font-weight:900;color:#fff}.equipment-spec-sub{font-size:9px;color:#b9c4cf}.equipment-demand{display:flex;gap:7px;align-items:center;margin-top:4px;color:#e8edf2;font-size:10px}
+.specialty-markets{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.specialty-market{border:2px solid #8493a2;border-radius:10px;padding:8px;background:linear-gradient(145deg,rgba(76,88,101,.84),rgba(13,17,23,.96));min-width:0}
+.specialty-market h3{margin:0 0 7px;display:flex;align-items:center;gap:6px;color:#fff}.specialty-market .region-count{margin-left:auto}
+.specialty-market.locked{opacity:.55;min-height:90px;display:grid;place-items:center;text-align:center}.specialty-market.locked h3{justify-content:center}
+.specialty-market .region-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+.specialty-badge,.heavy-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border:1px solid #9aa9b8;border-radius:999px;background:#202a34;color:#e7edf2;font-size:8px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.heavy-badge{border-color:#ef9c4a;color:#ffc47b;background:#4b2b12}.heavy-badge .module-icon,.specialty-badge .module-icon{width:13px;height:13px;font-size:8px}
+.dealership-marker{position:absolute;transform:translate(-50%,-50%);z-index:55;width:30px;height:30px;padding:3px;border-radius:50%;border:2px solid #d6dee6;background:#1b2530;color:#fff;box-shadow:0 2px 6px #000;display:grid;place-items:center;cursor:pointer}
+.dealership-marker .module-icon{width:18px;height:18px}.dealership-marker .dealer-kind{position:absolute;right:-4px;bottom:-4px;width:14px;height:14px;border-radius:50%;background:#eef2f5;color:#14191f;font-size:8px;font-weight:1000;display:grid;place-items:center}
+.dealership-marker .service-popup{display:none;position:absolute;left:26px;top:0;z-index:80;min-width:150px;padding:6px 8px;border:1px solid #7f8c99;border-radius:6px;background:#0b0f14;color:#fff;text-align:left;font-size:9px;white-space:nowrap}.dealership-marker:hover .service-popup,.dealership-marker:focus .service-popup{display:block}
+.equipment-shop-list{display:grid;gap:7px;max-height:56vh;overflow:auto;margin:10px 0}.equipment-shop-option{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;text-align:left}.equipment-shop-option.current{border-color:#75bb83}.equipment-shop-option .shop-status{text-align:right;font-size:9px}.equipment-shop-option .blocked{color:#ff7f7f}.equipment-shop-option .eligible{color:#83df9b}
+.inspection-status{display:inline-flex;align-items:center;gap:4px;color:#d6dde5}.inspection-status.pending{color:#9ee8aa}.inspection-status.skipped{color:#ff9393}
+.electric-bolt{color:#57d37f;text-shadow:0 0 5px rgba(87,211,127,.65)}
+.equipment-warning{margin:8px 0;padding:7px;border:1px solid #c65d5d;border-radius:7px;background:#421b1b;color:#ffc0c0}
+@media(max-width:800px){.specialty-markets{grid-template-columns:1fr}.specialty-market .region-cards{grid-template-columns:repeat(3,minmax(145px,1fr));overflow-x:auto}.equipment-rating-grid{grid-template-columns:1fr 1fr}}
+</style>
+<script id="v600-equipment-runtime">
+const V6_TRACTORS=[
+ {id:"p579",model:"Peterbilt 579",className:"Road Tractor",energyType:"Diesel",capacity:200,efficiency:8,unit:"gal",range:1600,wrench:1,badge:1,rep:5},
+ {id:"p589",model:"Peterbilt 589",className:"Road Tractor",energyType:"Diesel",capacity:300,efficiency:8,unit:"gal",range:2400,wrench:1,badge:1,rep:5},
+ {id:"t680",model:"Kenworth T680",className:"Road Tractor",energyType:"Diesel",capacity:300,efficiency:8,unit:"gal",range:2400,wrench:1,badge:1,rep:5},
+ {id:"t680e",model:"Kenworth T680E",className:"Road Tractor",energyType:"Electric",capacity:300,efficiency:200/300,unit:"kWh",range:200,wrench:1,badge:1,rep:10},
+ {id:"intl-lt",model:"International LT",className:"Road Tractor",energyType:"Diesel",capacity:200,efficiency:8,unit:"gal",range:1600,wrench:1,badge:1,rep:5},
+ {id:"lonestar",model:"International LoneStar",className:"Heavy Duty Tractor",energyType:"Diesel",capacity:200,efficiency:7,unit:"gal",range:1400,wrench:2,badge:1,rep:10,heavy:true},
+ {id:"cascadia",model:"Freightliner Cascadia",className:"Road Tractor",energyType:"Diesel",capacity:300,efficiency:8,unit:"gal",range:2400,wrench:1,badge:1,rep:5},
+ {id:"ecascadia",model:"Freightliner eCascadia",className:"Road Tractor",energyType:"Electric",capacity:450,efficiency:250/450,unit:"kWh",range:250,wrench:1,badge:1,rep:10}
+];
+const V6_TRAILERS=[
+ {id:"dry-utility",type:"Dry Van",make:"Utility",wrench:1,badge:1,rep:0,compat:["Dry Van"]},
+ {id:"dry-wabash",type:"Dry Van",make:"Wabash",wrench:1,badge:1,rep:0,compat:["Dry Van"]},
+ {id:"dry-great-dane",type:"Dry Van",make:"Great Dane",wrench:1,badge:1,rep:0,compat:["Dry Van"]},
+ {id:"liftgate",type:"Liftgate Dry Van",make:"",wrench:2,badge:1,rep:5,compat:["Dry Van","Liftgate"]},
+ {id:"flatbed-fontaine",type:"Flatbed",make:"Fontaine",wrench:1,badge:2,rep:10,compat:["Flatbed"]},
+ {id:"flatbed-dorsey",type:"Flatbed",make:"Dorsey",wrench:1,badge:2,rep:10,compat:["Flatbed"]},
+ {id:"reefer-wabash",type:"Reefer",make:"Wabash",wrench:2,badge:2,rep:5,compat:["Dry Van","Refrigerated"]},
+ {id:"reefer-great-dane",type:"Reefer",make:"Great Dane",wrench:2,badge:2,rep:5,compat:["Dry Van","Refrigerated"]},
+ {id:"tanker-polar",type:"Tanker",make:"Polar",wrench:2,badge:2,rep:10,compat:["Tanker"]},
+ {id:"tanker-jack-olsta",type:"Tanker",make:"Jack Olsta",wrench:2,badge:2,rep:10,compat:["Tanker"]}
+];
+const V6_DEALERS={
+ Seattle:"truck",Portland:"trailer","Los Angeles":"truck",Phoenix:"trailer",Chicago:"truck",Omaha:"trailer",
+ Dallas:"truck",Houston:"trailer",Louisville:"truck",Philadelphia:"trailer",Atlanta:"truck",Jacksonville:"trailer"
+};
+const V6_DEALER_NAMES={truck:"Truck Dealership",trailer:"Trailer Dealership"};
+function v6Power(p){return V6_TRACTORS.find(x=>x.id===p.powerId)||V6_TRACTORS[0]}
+function v6Trailer(p){return V6_TRAILERS.find(x=>x.id===p.trailerId)||V6_TRAILERS[0]}
+function v6LoadDemand(load){return load?{wrench:Number(load.wrenchDemand||1),badge:Number(load.badgeDemand||1)}:{wrench:0,badge:0}}
+function v6OperatingTrailer(p){if(p.dhActive)return {id:"contract-dh",type:"Contracted Drop/Hook",make:"",wrench:1,badge:1,compat:["D/H Dry Van"]};return personalTrailerWithPlayer(p)?v6Trailer(p):null}
+function v6Commitment(p,power=v6Power(p),trailer=v6OperatingTrailer(p),load=p.active||p.dhActive){const d=v6LoadDemand(load);return {wrench:(power?.wrench||0)+(trailer?.wrench||0)+d.wrench,badge:(power?.badge||0)+(trailer?.badge||0)+d.badge}}
+function v6OutOfCompliance(p,commit=v6Commitment(p)){return state.equipmentEnabled&&(commit.wrench>(p.maintenanceRating??3)||commit.badge>(p.complianceRating??3))}
+function equipmentCheckPasses(p){return !v6OutOfCompliance(p)}
+function v6LoadIsHeavy(load){return !!(load?.heavy||(load?.traits||[]).includes("Heavy"))}
+function v6PowerSupports(load,power){return !v6LoadIsHeavy(load)||!!power?.heavy}
+function v6TrailerSupports(load,trailer){if(!load||!trailer)return false;const req=(load.equipmentRequired||[load.equipment||"Dry Van"]).filter(Boolean);return req.every(x=>trailer.compat.includes(x))}
+function v6CanPickup(p,load){const power=v6Power(p),trailer=v6OperatingTrailer(p);if(!v6TrailerSupports(load,trailer))return {ok:false,message:`${trailer?.type||"No trailer"} cannot carry ${load.equipmentRequired?.join(" + ")||load.equipment}.`};if(!v6PowerSupports(load,power))return {ok:false,message:"Heavy freight requires a Heavy Duty Tractor."};const projected=v6Commitment(p,power,trailer,load);if(v6OutOfCompliance(p,projected))return {ok:false,message:`Pickup would commit 🔧 ${projected.wrench}/${p.maintenanceRating} and Badge ${projected.badge}/${p.complianceRating}.`};return {ok:true}}
+function v6InitPlayer(p){p.powerId=p.powerId||"p579";p.trailerId=p.trailerId||"dry-utility";p.maintenanceRating=Number.isFinite(p.maintenanceRating)?p.maintenanceRating:3;p.complianceRating=Number.isFinite(p.complianceRating)?p.complianceRating:3;p.inspectionStatus=p.inspectionStatus||"pending";const spec=v6Power(p);p.powertrain={energyType:spec.energyType,capacity:spec.capacity,efficiency:spec.efficiency,unit:spec.unit};p.energy=Math.min(Number.isFinite(p.energy)?p.energy:spec.capacity,spec.capacity)}
+function v6NormalizeRegularLoads(){DATA.loads.forEach(l=>{if(l.type==="Weather"||l.type==="Core"){let req=l.equipmentRequired||[l.equipment||"Dry Van"];if(req.includes("Flatbed"))req=["Dry Van"];if(req.includes("Refrigerated"))req=["Refrigerated"];l.equipmentRequired=req;l.equipment=req.join(" + ");l.wrenchDemand=1;l.badgeDemand=1}})}
+v6NormalizeRegularLoads();
+
+function v6SpecialtyTemplates(){
+ const cities=MARKET_REGIONS.map(r=>DATA.loads.filter(l=>l.type==="Core"&&l.market===r));
+ const tankerPlan=[["Chemicals","Chemicals","Agricultural","Food"],["Chemicals","Chemicals","Agricultural","Food"],["Chemicals","Chemicals","Agricultural","Food"],["Chemicals","Chemicals","Agricultural","Food"],["Chemicals","Chemicals","Agricultural","Agricultural"],["Chemicals","Chemicals","Agricultural","Agricultural"]];
+ const flatPlan=[["Building Materials","Building Materials","Building Materials","Agricultural"],["Building Materials","Building Materials","Building Materials","Agricultural"],["Building Materials","Building Materials","Building Materials","Auto Parts"],["Building Materials","Building Materials","Building Materials","Agricultural"],["Building Materials","Building Materials","Agricultural","Auto Parts"],["Building Materials","Building Materials","Agricultural","Auto Parts"]];
+ const make=(kind,plan)=>{const out=[];MARKET_REGIONS.forEach((region,ri)=>plan[ri].forEach((commodity,slot)=>{const source=cities[ri][(slot*5+ri)%cities[ri].length],ordinal=ri*4+slot,heavy=kind==="Flatbed"?((commodity==="Building Materials"&&[5,17].includes(ordinal))||(commodity==="Agricultural"&&ordinal===3)):commodity==="Agricultural"&&[19,23].includes(ordinal);out.push({...source,id:`EQ${kind==="Tanker"?"TN":"FB"}${String(ordinal+1).padStart(2,"0")}`,type:"Equipment",ownerModule:"equipment",specialtyType:kind,commodity,equipmentRequired:[kind],equipment:kind,heavy,traits:[...(source.traits||[]).filter(t=>t!=="Heavy"),...(heavy?["Heavy"]:[])],wrenchDemand:1,badgeDemand:1,reward:Math.min(11,(source.reward||2)+1+(heavy?1:0)),appointmentOnly:false})}));return out};
+ return {Tanker:make("Tanker",tankerPlan),Flatbed:make("Flatbed",flatPlan)};
+}
+const V6_SPECIALTY_LOADS=v6SpecialtyTemplates();
+function v6InitSpecialty(){state.specialtyDecks={Tanker:shuffle(V6_SPECIALTY_LOADS.Tanker.map(x=>({...x}))),Flatbed:shuffle(V6_SPECIALTY_LOADS.Flatbed.map(x=>({...x})))};state.specialtyMarkets={Tanker:[],Flatbed:[]};state.specialtyDiscards={Tanker:[],Flatbed:[]};state.specialtyActivated={Tanker:false,Flatbed:false}}
+function v6ActivateSpecialty(kind){if(!state.specialtyActivated) v6InitSpecialty();if(!state.specialtyActivated[kind]){state.specialtyActivated[kind]=true;while(state.specialtyMarkets[kind].length<3)v6RefillSpecialty(kind)}}
+function v6RefillSpecialty(kind){let deck=state.specialtyDecks[kind],discard=state.specialtyDiscards[kind];if(!deck.length&&discard.length){state.specialtyDecks[kind]=deck=shuffle(discard.splice(0))}if(deck.length)state.specialtyMarkets[kind].push(deck.pop())}
+function v6VisibleMarketLoads(){return [...MARKET_REGIONS.flatMap(r=>state.regionMarkets[r]||[]),...Object.keys(state.specialtyMarkets||{}).flatMap(k=>state.specialtyActivated?.[k]?(state.specialtyMarkets[k]||[]):[])]}
+
+const startGameBeforeV6=startGame;
+startGame=function(){startGameBeforeV6();if(!state.started)return;if(state.equipmentEnabled){state.players.forEach(v6InitPlayer);v6InitSpecialty()}else state.players.forEach(p=>{p.powertrain={...(p.powertrain||DEFAULT_POWERTRAIN),efficiency:8};p.energy=Math.min(p.energy??p.powertrain.capacity,p.powertrain.capacity)});render()};
+const setupBeforeV6=setup;
+setup=function(){setupBeforeV6();const input=document.getElementById("equipmentEnabled");if(input){input.disabled=false;input.checked=true;const row=input.closest(".module-choice");row?.classList.remove("unavailable");const name=row?.querySelector("b"),status=row?.querySelector(".module-status");if(name){name.innerHTML=`Equipment ${moduleIcon("equipment")}`;name.classList.add("equipment-ready-name")}if(status){status.textContent="Ready";status.className="module-status ready"}}decorateCompactModuleGrid?.()};
+
+const doRestBeforeV6=doRest;
+doRest=function(){const p=state.players[state.current];if(state.equipmentEnabled)p.inspectionStatus="pending";doRestBeforeV6();render()};
+function v6RatingChoice(mode,continueDrive=false){const p=state.players[state.current],increase=mode==="inspect",verb=increase?"Increase":"Decrease",maxed=p.maintenanceRating>=5&&p.complianceRating>=5,zero=p.maintenanceRating<=0&&p.complianceRating<=0;openModal(`${moduleDialogTitle("equipment",increase?"Pre-Trip Inspection":"Skip Inspection")}<p>${increase?"Spend 30 minutes and choose a rating to increase.":"Choose a rating to decrease before driving."}</p><div class="choicegrid action-submenu">${increase&&maxed?`<button class="primary" onclick="v6ApplyRatingChoice('none','inspect',${continueDrive})">Complete Inspection · 30 minutes</button>`:!increase&&zero?`<button class="primary" onclick="v6ApplyRatingChoice('none','skip',${continueDrive})">Continue · No rating reduction</button>`:`<button onclick="v6ApplyRatingChoice('wrench','${mode}',${continueDrive})" ${(increase?p.maintenanceRating>=5:p.maintenanceRating<=0)?"disabled":""}>🔧 ${verb} Maintenance<br><span class="small">${p.maintenanceRating} → ${p.maintenanceRating+(increase?1:-1)}</span></button><button onclick="v6ApplyRatingChoice('badge','${mode}',${continueDrive})" ${(increase?p.complianceRating>=5:p.complianceRating<=0)?"disabled":""}>Badge ${verb} Compliance<br><span class="small">${p.complianceRating} → ${p.complianceRating+(increase?1:-1)}</span></button>`}</div><button onclick="closeModal()">Cancel</button>`)}
+function v6ApplyRatingChoice(rating,mode,continueDrive){const p=state.players[state.current],increase=mode==="inspect";createUndo(increase?"Inspect equipment":"Skip inspection");if(rating==="wrench")p.maintenanceRating=Math.max(0,Math.min(5,p.maintenanceRating+(increase?1:-1)));if(rating==="badge")p.complianceRating=Math.max(0,Math.min(5,p.complianceRating+(increase?1:-1)));p.inspectionStatus=increase?"inspected":"skipped";recordGameEvent(increase?"equipment_inspected":"equipment_inspection_skipped",{rating:rating||"none",maintenance_rating:p.maintenanceRating,compliance_rating:p.complianceRating,out_of_compliance:v6OutOfCompliance(p)});if(increase){spend(p,.5,"inspect");closeModal();nextPlayer();render()}else{closeModal();render();if(continueDrive)driveBeforeV6()}}
+function inspectEquipment(){const p=state.players[state.current];if(!state.equipmentEnabled||p.inspectionStatus!=="pending")return;v6RatingChoice("inspect",false)}
+const driveBeforeV6=drive;
+drive=function(){const p=state.players[state.current];if(state.equipmentEnabled&&p.inspectionStatus==="pending"){openModal(`${moduleDialogTitle("equipment","Pre-Trip Inspection")}<p>You have not inspected during this tour of duty.</p><div class="choicegrid action-submenu"><button class="primary" onclick="v6RatingChoice('inspect',true)">Yes · Inspect for 30 minutes</button><button class="danger" onclick="v6RatingChoice('skip',true)">No · Skip and reduce a rating</button></div><button onclick="closeModal()">Cancel</button>`);return}driveBeforeV6()};
+
+const workAvailableBeforeV6=workAvailable;
+workAvailable=function(p){return workAvailableBeforeV6(p)||(state.equipmentEnabled&&p.inspectionStatus==="pending")};
+work=function(){const p=state.players[state.current],city=playerCity(p),place=serviceAtPosition(p),label=place?.name||positionLabel(p);const fuelOption=state.fuelEnabled&&place?.services?.fuel?`<button onclick="closeModal();fuel()">${v6Power(p).energyType==="Electric"?`<span class="electric-bolt">⚡</span> Charge · 1 hour`:`${fuelGlyph()} Fuel · 30 minutes`}</button>`:"";const pickups=pickupOptions(p),deliveries=deliverOptions(p),pickupReady=!!(pickups.live.length||pickups.dh.length||pickups.reattach),deliverReady=!!(deliveries.live||deliveries.dh),pickupOption=city?`<button onclick="closeModal();pickupAction()" ${pickupReady?"":"disabled"}>${actionArt("pickup",pickupReady)} Pickup</button>`:"",deliverOption=city?`<button onclick="closeModal();deliverAction()" ${deliverReady?"":"disabled"}>${actionArt("deliver",deliverReady)} Deliver</button>`:"",inspectOption=state.equipmentEnabled?`<button onclick="inspectEquipment()" ${p.inspectionStatus==="pending"?"":"disabled"}>${moduleIcon("equipment")} Inspect · 30 minutes</button>`:"";openModal(`<h3>On Duty at ${esc(label)}</h3><div class="choicegrid action-submenu">${inspectOption}${fuelOption}${pickupOption}${deliverOption}</div><button onclick="closeModal()">Cancel</button>`)};
+
+function v6DealerAt(p){return V6_DEALERS[playerCity(p)]||null}
+offDutyMenu=function(){const p=state.players[state.current],dealer=v6DealerAt(p),trade=state.equipmentEnabled?`<button onclick="equipmentTrade()" ${dealer?"":"disabled title=\"Acquire/Trade is available at dealerships\""}>${moduleIcon("equipment")} Acquire/Trade · 5 hours</button>`:"",stranded=isStranded(p),roadside=`<button class="${stranded?"danger":""}" onclick="roadsideAssistance()" ${stranded?"":'disabled title="Roadside Assistance is not needed"'}>⚠ Roadside Assistance</button>`;openModal(`<h3>Off Duty</h3><div class="choicegrid action-submenu"><button onclick="closeModal();searchLoadBoards()">🔎 Search Loads · 1 hour</button><button onclick="offDutyWait()">⏱ Wait</button>${trade}${roadside}</div><button onclick="closeModal()">Cancel</button>`)};
+function equipmentTrade(){const p=state.players[state.current],kind=v6DealerAt(p);if(!kind){openModal(`${moduleDialogTitle("equipment","Acquire/Trade unavailable")}<p>Visit a marked truck or trailer dealership.</p><button onclick="closeModal()">OK</button>`);return}const specs=kind==="truck"?V6_TRACTORS:V6_TRAILERS,current=kind==="truck"?p.powerId:p.trailerId;openModal(`${moduleDialogTitle("equipment",`${V6_DEALER_NAMES[kind]} · ${esc(playerCity(p))}`)}<p class="small">Trade your current ${kind} and spend 5 hours. REP is an eligibility threshold and is not spent.</p><div class="equipment-shop-list">${specs.map(s=>{const check=v6AcquireCheck(p,kind,s),title=kind==="truck"?s.model:`${s.type}${s.make?` · ${s.make}`:""}`;return `<button class="equipment-shop-option ${s.id===current?"current":""}" onclick="v6ConfirmAcquire('${kind}','${s.id}')" ${check.ok?"":"disabled"}><span><b>${moduleIcon("equipment")} ${esc(title)}</b><br><span class="small">${kind==="truck"?`${s.className} · ${s.energyType} · ${s.range} mi range`:s.compat.join(" + ")}<br>🔧 ${s.wrench} · Badge ${s.badge} · ${s.rep} REP required</span></span><span class="shop-status ${check.ok?"eligible":"blocked"}">${check.message}</span></button>`}).join("")}</div><button onclick="closeModal()">Cancel</button>`)}
+function v6AcquireCheck(p,kind,s){const current=kind==="truck"?p.powerId:p.trailerId;if(s.id===current)return {ok:false,message:"CURRENT"};if(p.reputation<s.rep)return {ok:false,message:`NEEDS ${s.rep} REP`};if(kind==="trailer"&&!personalTrailerWithPlayer(p))return {ok:false,message:"TRAILER NOT ATTACHED"};if(kind==="trailer"&&(p.active||p.dhActive))return {ok:false,message:"ACTIVE LOAD"};const power=kind==="truck"?s:v6Power(p),trailer=kind==="trailer"?s:v6OperatingTrailer(p);if(p.active&&!v6PowerSupports(p.active,power))return {ok:false,message:"ACTIVE LOAD REQUIRES HEAVY"};const commit=v6Commitment(p,power,trailer,p.active||p.dhActive);if(v6OutOfCompliance(p,commit))return {ok:false,message:`WOULD BE ${commit.wrench}/${p.maintenanceRating} 🔧 · ${commit.badge}/${p.complianceRating} BADGE`};return {ok:true,message:"AVAILABLE"}}
+function v6ConfirmAcquire(kind,id){const p=state.players[state.current],s=(kind==="truck"?V6_TRACTORS:V6_TRAILERS).find(x=>x.id===id),check=s&&v6AcquireCheck(p,kind,s);if(!check?.ok)return;const title=kind==="truck"?s.model:`${s.type}${s.make?` · ${s.make}`:""}`;openModal(`${moduleDialogTitle("equipment","Confirm Acquire/Trade")}<p>Trade for <b>${esc(title)}</b> and spend <b>5 hours</b>?</p><div class="row"><button onclick="equipmentTrade()">Back</button><button class="primary" onclick="v6Acquire('${kind}','${id}')">Confirm · 5 Hours</button></div>`)}
+function v6Acquire(kind,id){const p=state.players[state.current],s=(kind==="truck"?V6_TRACTORS:V6_TRAILERS).find(x=>x.id===id),check=s&&v6AcquireCheck(p,kind,s);if(!check?.ok){equipmentTrade();return}createUndo(`Trade ${kind}`);if(kind==="truck"){p.powerId=s.id;p.powertrain={energyType:s.energyType,capacity:s.capacity,efficiency:s.efficiency,unit:s.unit};p.energy=s.capacity}else{p.trailerId=s.id;if(s.type==="Tanker"||s.type==="Flatbed")v6ActivateSpecialty(s.type)}spend(p,5,"equipmentTrade");recordGameEvent("equipment_trade",{location:playerCity(p),equipment_kind:kind,equipment_id:id,equipment_name:kind==="truck"?s.model:s.type,hours:5});closeModal();nextPlayer();render()}
+
+const fuelBeforeV6=fuel,confirmFuelBeforeV6=confirmFuel;
+fuel=function(){const p=state.players[state.current];if(!state.equipmentEnabled||v6Power(p).energyType!=="Electric"){fuelBeforeV6();return}const place=serviceAtPosition(p);if(!place?.services?.fuel){fuelBeforeV6();return}const spec=v6Power(p),amount=Math.max(0,Math.ceil(spec.capacity-(p.energy??spec.capacity)));openModal(`${moduleDialogTitle("fuel","Charge")}<p>Charge <b>${amount} kWh</b> for <b>1 hour</b>?</p><div class="row"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="confirmFuel()"><span class="electric-bolt">⚡</span> Charge</button></div>`)};
+confirmFuel=function(){const p=state.players[state.current];if(!state.equipmentEnabled||v6Power(p).energyType!=="Electric"){confirmFuelBeforeV6();return}const place=serviceAtPosition(p),spec=v6Power(p);if(!place?.services?.fuel)return;createUndo("Charge to maximum");p.energy=spec.capacity;spend(p,1,"charge");recordGameEvent("charge",{location:place.name,capacity:spec.capacity,range_miles:rangeMiles(p)});closeModal();nextPlayer();render()};
+
+const confirmCancelBookedLoadBeforeV6=confirmCancelBookedLoad;
+confirmCancelBookedLoad=function(id){const p=state.players[state.current],load=p.booked.find(l=>l.id===id);if(!load?.specialtyType){confirmCancelBookedLoadBeforeV6(id);return}const idx=p.booked.findIndex(l=>l.id===id);if(idx<0||p.reputation<=0){closeModal();render();return}createUndo("Cancel booked load");const [removed]=p.booked.splice(idx,1);p.reputation-=1;state.specialtyDiscards[removed.specialtyType].push(removed);recordGameEvent("load_cancelled",{load_id:removed.id,origin:removed.origin,destination:removed.destination,rep_change:-1,specialty:removed.specialtyType});closeModal();render()};
+const doLoadBeforeV6=doLoad;
+doLoad=function(id){const p=state.players[state.current],load=p.booked.find(l=>l.id===id);if(state.equipmentEnabled&&load){const check=v6CanPickup(p,load);if(!check.ok){openModal(`${moduleDialogTitle("equipment","Pickup unavailable")}<div class="equipment-warning">${esc(check.message)}</div><p>Trade equipment, improve a rating, or select a compatible load.</p><button onclick="closeModal()">OK</button>`);return}}doLoadBeforeV6(id)};
+const startDropHookBeforeV6=startDropHook;
+startDropHook=function(id){const p=state.players[state.current],l=(state.dhLanes||[]).find(x=>x.id===id);if(state.equipmentEnabled&&l){const projected=v6Commitment(p,v6Power(p),{wrench:1,badge:1,type:"Contracted Drop/Hook"},{...l,wrenchDemand:1,badgeDemand:1});if(v6OutOfCompliance(p,projected)){openModal(`${moduleDialogTitle("equipment","Drop & Hook unavailable")}<p>This contracted trailer and load would exceed your ratings: 🔧 ${projected.wrench}/${p.maintenanceRating} · Badge ${projected.badge}/${p.complianceRating}.</p><button onclick="closeModal()">OK</button>`);return}}startDropHookBeforeV6(id)};
+
+const bookLoadBeforeV6=bookLoad;
+bookLoad=function(id){let kind=null,idx=-1,load=null;for(const k of ["Tanker","Flatbed"]){idx=(state.specialtyMarkets?.[k]||[]).findIndex(x=>x.id===id);if(idx>=0){kind=k;load=state.specialtyMarkets[k][idx];break}}if(!load){bookLoadBeforeV6(id);return}const p=state.players[state.current];if(p.booked.length>=3){openModal(`<h3>Booking Limit</h3><p>Maximum of 3 booked loads.</p><button class="primary" onclick="closeModal()">OK</button>`);return}if(v6Trailer(p).type!==kind||!personalTrailerWithPlayer(p)){openModal(`${moduleDialogTitle("equipment",`${kind} freight unavailable`)}<p>You must have your ${kind} trailer attached to book from this market.</p><button onclick="closeModal()">OK</button>`);return}if(v6LoadIsHeavy(load)&&!v6Power(p).heavy){openModal(`${moduleDialogTitle("equipment","Heavy freight unavailable")}<p>This load also requires a Heavy Duty Tractor.</p><button onclick="closeModal()">OK</button>`);return}clearUndo();state.expandedLoadId=null;const booked=assignAppointments({...load});p.booked.push(booked);state.specialtyMarkets[kind].splice(idx,1);v6RefillSpecialty(kind);syncRegionalMarket();recordGameEvent("load_booked",{load_id:booked.id,origin:booked.origin,destination:booked.destination,reward:booked.reward,specialty:kind,heavy:v6LoadIsHeavy(booked)});render();if(booked.appointmentOnly)showAppointmentRequest(booked)};
+
+syncRegionalMarket=function(){state.market=v6VisibleMarketLoads()};
+searchLoadBoards=function(){if(state.finished)return;state.searchMode=true;state.searchSelections=[];state.expandedLoadId=null;state.routePreview=null;render();requestAnimationFrame(()=>document.getElementById("searchModeControls")?.scrollIntoView({behavior:"smooth",block:"center"}))};
+setAllLoadSearch=function(value){state.searchSelections=value?v6VisibleMarketLoads().map(l=>l.id):[];render()};
+cancelLoadSearch=function(){state.searchMode=false;state.searchSelections=[];state.expandedLoadId=null;state.routePreview=null;render()};
+confirmLoadSearch=function(){if(!state.searchMode)return;const ids=[...state.searchSelections];if(!ids.length)return;clearUndo();for(const r of MARKET_REGIONS){const a=state.regionMarkets[r]||[],removed=a.filter(l=>ids.includes(l.id));if(removed.length){state.discard.push(...removed);state.regionMarkets[r]=a.filter(l=>!ids.includes(l.id));while(state.regionMarkets[r].length<regionalMarketSize())refillRegion(r)}}for(const kind of ["Tanker","Flatbed"]){if(!state.specialtyActivated?.[kind])continue;const a=state.specialtyMarkets[kind]||[],removed=a.filter(l=>ids.includes(l.id));if(removed.length){state.specialtyDiscards[kind].push(...removed);state.specialtyMarkets[kind]=a.filter(l=>!ids.includes(l.id));while(state.specialtyMarkets[kind].length<3)v6RefillSpecialty(kind)}}syncRegionalMarket();state.searchMode=false;state.searchSelections=[];state.expandedLoadId=null;spend(state.players[state.current],1,"search");recordGameEvent("load_search",{replaced_loads:ids.length});nextPlayer();render()};
+
+const previewLoadRouteBeforeV6=previewLoadRoute;
+previewLoadRoute=function(loadId){if((state.specialtyMarkets?.Tanker||[]).some(l=>l.id===loadId)||(state.specialtyMarkets?.Flatbed||[]).some(l=>l.id===loadId)){const load=v6VisibleMarketLoads().find(l=>l.id===loadId);if(state.routePreview?.loadId===loadId){state.routePreview=null;render();return}const sp=shortestCityPath(load.origin,load.destination);state.routePreview=sp?{loadId,origin:load.origin,destination:load.destination,edges:sp.edges,hours:sp.hours,miles:sp.miles}:null;render();return}previewLoadRouteBeforeV6(loadId)};
+function v6SpecialtyCard(load,kind){const selected=state.searchSelections.includes(load.id),expanded=state.expandedLoadId===load.id,owned=v6Trailer(state.players[state.current]).type===kind&&personalTrailerWithPlayer(state.players[state.current]),powerOk=!v6LoadIsHeavy(load)||v6Power(state.players[state.current]).heavy;return `<div class="compact-load ${selected?"selected":""} ${expanded?"expanded":""}" onclick="toggleLoadCard('${load.id}')"><div class="compact-load-main"><div class="freight-inline"><span class="lane">${loadRouteMarkup(load)}</span><button class="route-mini" onclick="event.stopPropagation();previewLoadRoute('${load.id}')">Route</button><span class="quick-stat">${load.miles||load.segments*50} mi</span><span class="quick-stat">${repDisplay(load.reward,{compact:true})}</span>${v6LoadIsHeavy(load)?`<span class="heavy-badge">${moduleIcon("equipment")}Heavy</span>`:""}${state.searchMode?`<span class="search-check">${selected?"☑":"☐"}</span>`:""}</div></div><div class="compact-load-detail" onclick="event.stopPropagation()"><div class="detail-route">${loadRouteMarkup(load)}</div><div class="detail-meta"><b>${esc(load.commodity)}</b><br>${esc(kind)}${v6LoadIsHeavy(load)?" · Heavy Duty Tractor":""} · ${repDisplay(load.reward,{compact:true})}${appointmentOfferBadge(load)}${loadCardFooter(load)}</div><div class="detail-actions"><button onclick="event.stopPropagation();previewLoadRoute('${load.id}')">🗺 Route</button><button class="primary" onclick="event.stopPropagation();bookLoad('${load.id}')" ${(state.searchMode||!owned||!powerOk||state.players[state.current].booked.length>=3)?"disabled":""}>Book</button></div></div></div>`}
+function v6RenderSpecialtyMarkets(){if(!state.started||!state.equipmentEnabled)return;const root=document.getElementById("regionalMarket");if(!root)return;document.getElementById("specialtyMarkets")?.remove();const box=document.createElement("div");box.id="specialtyMarkets";box.className="specialty-markets";box.innerHTML=["Tanker","Flatbed"].map(kind=>state.specialtyActivated?.[kind]?`<section class="specialty-market"><h3>${moduleIcon("equipment")} ${kind} Freight <span class="region-count">${state.specialtyMarkets[kind].length}/3 Loads</span></h3><div class="region-cards">${state.specialtyMarkets[kind].map(l=>v6SpecialtyCard(l,kind)).join("")}</div></section>`:`<section class="specialty-market locked"><div><h3>${moduleIcon("equipment")} ${kind} Freight</h3><span class="small">Acquire a ${kind} trailer to introduce this 24-card market.</span></div></section>`).join("");root.appendChild(box)}
+const renderMarketBeforeV6=renderMarket;
+renderMarket=function(){renderMarketBeforeV6();v6RenderSpecialtyMarkets();const controls=document.getElementById("searchModeControls");if(controls&&state.searchMode)controls.querySelector(".search-mode-banner").textContent="Select any regional or active specialty loads to replace for 1 hour."};
+
+function v6RatingMeter(value,committed){return `<div class="rating-meter">${Array.from({length:5},(_,i)=>`<span class="rating-box ${i<committed?"committed":i<value?"available":"locked"}"></span>`).join("")}</div>`}
+function v6DemandHtml(s){return `<div class="equipment-demand"><span>🔧 ${s.wrench}</span><span>Badge ${s.badge}</span><span>${s.rep} REP</span></div>`}
+const equipmentHtmlBeforeV6=equipmentHtml;
+equipmentHtml=function(p){if(!state.equipmentEnabled)return equipmentHtmlBeforeV6(p);const power=v6Power(p),trailer=v6OperatingTrailer(p),owned=v6Trailer(p),load=p.active,units=p.dhActive?(p.dhActive.phase==="return"?0:5):(load?loadUnits(load):0),loadState=units===0?"Empty":units===5?"Full":"Partial",commit=v6Commitment(p),bad=v6OutOfCompliance(p),trailerCard=trailer?`<div class="eq-slot trailer-card equipment-module-card"><div class="eq-card-title">Trailer</div><div class="eq-art-line">${vehicleArt("trailer",p.dhActive?"#7a828a":p.color,"dashboard-trailer-art")}${trailerCargoOverlay(units)}</div><div class="eq-compact-specs"><div class="equipment-spec-name">${esc(trailer.type)}${!p.dhActive&&owned.make?` · ${esc(owned.make)}`:""}</div><div>${p.dhActive?"Contracted Drop/Hook":"Owned"} · ${units}/5 Units · ${loadState}</div>${v6DemandHtml(trailer)}</div><span class="equipment-card-module">${moduleIcon("equipment")}</span></div>`:`<div class="eq-slot no-trailer-card">NO TRAILER<br>ATTACHED</div>`;return `<div class="equipment-board"><div class="equipment-title">Equipment ${moduleIcon("equipment")}</div><div class="equipment-chain"><div class="eq-slot power-card equipment-module-card"><div class="eq-card-title">Power</div><div class="eq-art-line">${vehicleArt("tractor",p.color,"dashboard-tractor-art")}</div><div class="eq-compact-specs"><div class="equipment-spec-name">${esc(power.model)}</div><div>${esc(power.className)} · ${power.energyType}</div><div>${power.capacity} ${power.unit}${power.energyType==="Diesel"?` · ${power.efficiency.toFixed(1)} MPG`:` · ${power.range} mi max`}</div>${v6DemandHtml(power)}</div><span class="equipment-card-module">${moduleIcon("equipment")}</span></div>${trailerCard}${activeEquipmentLoadHtml(p)}</div><div class="module-strip"><div class="module-enabled ${rangeMiles(p)<=50?"fuel-critical":rangeMiles(p)<=250?"fuel-warning":""}">${moduleIcon("fuel")}${power.energyType}<br>${Math.round(p.energy??power.capacity)}/${power.capacity} ${power.unit} · ${rangeMiles(p)} mi range</div><div class="module-enabled ${bad&&commit.wrench>p.maintenanceRating?"out-of-compliance":""}"><span class="rating-title">🔧 Maintenance Rating</span><strong>${commit.wrench}/${p.maintenanceRating} committed</strong>${v6RatingMeter(p.maintenanceRating,commit.wrench)}${bad&&commit.wrench>p.maintenanceRating?`<span class="out-of-compliance-label">OUT OF COMPLIANCE</span>`:""}</div><div class="module-enabled ${bad&&commit.badge>p.complianceRating?"out-of-compliance":""}"><span class="rating-title">Badge Compliance Rating</span><strong>${commit.badge}/${p.complianceRating} committed</strong>${v6RatingMeter(p.complianceRating,commit.badge)}${bad&&commit.badge>p.complianceRating?`<span class="out-of-compliance-label">OUT OF COMPLIANCE</span>`:""}</div></div></div>`};
+
+const renderTabsBeforeV6=renderTabs;
+renderTabs=function(){renderTabsBeforeV6();if(!state.started||!state.equipmentEnabled)return;const p=state.players[state.current],buttons=[...document.querySelectorAll(".active-dashboard .action-btn")],off=buttons.find(b=>b.textContent.includes("OFF DUTY")),on=buttons.find(b=>b.textContent.includes("ON DUTY"));if(off){const cost=off.querySelector(".action-cost"),dealer=v6DealerAt(p);cost.innerHTML=`<span class="subaction available">Search Loads</span> · <span class="subaction available">Wait</span> · <span class="roadside-symbol ${isStranded(p)?"active":"inactive"}">⚠</span> · <span class="subaction ${dealer?"available":""}">Acquire/Trade</span>`}if(on){on.disabled=!workAvailable(p);const cost=on.querySelector(".action-cost"),status=p.inspectionStatus||"pending";cost.innerHTML=`<span class="subaction ${status==="pending"?"available":""}">Inspect</span> · <span class="subaction ${state.fuelEnabled&&serviceAtPosition(p)?.services?.fuel?"available":""}">${v6Power(p).energyType==="Electric"?"⚡ Charge":"Fuel"}</span> · <span class="subaction ${pickupOptions(p).live.length||pickupOptions(p).dh.length||pickupOptions(p).reattach?"available":""}">Pickup</span> · <span class="subaction ${deliverOptions(p).live||deliverOptions(p).dh?"available":""}">Deliver</span>`}};
+
+const loadRequirementsHtmlBeforeV6=loadRequirementsHtml;
+loadRequirementsHtml=function(load){const base=loadRequirementsHtmlBeforeV6(load);if(!state.equipmentEnabled)return base;const heavy=v6LoadIsHeavy(load)?`<span class="heavy-badge">${moduleIcon("equipment")}Heavy Duty Tractor</span>`:"";return heavy?base.replace("</section>",`${heavy}</section>`):base};
+loadModuleStrip=function(load){const owner=load?.type==="DropHook"?"dh":load?.type==="Weather"?"weather":load?.type==="Equipment"?"equipment":"core",order=["core","fuel","dh","customers","appointments","weather","equipment","maintenance","events","ltl","hos","doubles","truckstops"];return `<div class="module-ownership-strip">${order.map(kind=>moduleIcon(kind,kind===owner)).join("")}</div>`};
+
+function v6RenderDealers(){document.querySelectorAll(".dealership-marker").forEach(n=>n.remove());if(!state.started||!state.equipmentEnabled)return;const labels=document.getElementById("htmlLabels");if(!labels)return;Object.entries(V6_DEALERS).forEach(([city,kind])=>{const q=xy(city),pt=worldToPanelPixels(q[0],q[1]),b=document.createElement("button");b.className="dealership-marker";b.style.left=(pt[0]+(kind==="truck"?-19:19))+"px";b.style.top=(pt[1]-22)+"px";b.title=`${city} ${V6_DEALER_NAMES[kind]}`;b.setAttribute("aria-label",`${city} ${V6_DEALER_NAMES[kind]}`);b.onclick=()=>{const p=state.players[state.current];if(playerCity(p)===city)equipmentTrade();else openModal(`${moduleDialogTitle("equipment",V6_DEALER_NAMES[kind])}<p><b>${esc(city)}</b></p><p>Drive here to acquire or trade ${kind}s.</p><button onclick="closeModal()">Close</button>`)};b.innerHTML=`${moduleIcon("equipment")}<span class="dealer-kind">${kind==="truck"?"P":"T"}</span><span class="service-popup"><b>${esc(city)} ${V6_DEALER_NAMES[kind]}</b><br>Acquire/Trade · 5 hours</span>`;labels.appendChild(b)})}
+const renderRegisteredMapOverlayBeforeV6=renderRegisteredMapOverlay;
+renderRegisteredMapOverlay=function(){renderRegisteredMapOverlayBeforeV6();v6RenderDealers()};
+
+const activityTextBeforeV6=activityText;
+activityText=function(e){if(e.action==="equipment_trade")return `${e.player_name||"A driver"} trades for ${e.equipment_name}.`;if(e.action==="equipment_inspected")return `${e.player_name||"A driver"} completes a pre-trip inspection.`;if(e.action==="equipment_inspection_skipped")return `${e.player_name||"A driver"} skips inspection and reduces ${e.rating}.`;if(e.action==="charge")return `${e.player_name||"A driver"} charges in ${e.location}.`;return activityTextBeforeV6(e)};
+enabledModulesLabel=function(){const modules=["Core Game"];if(state.fuelEnabled)modules.push("Fuel Module");if(state.dropHooksEnabled)modules.push("Drop & Hooks Module");if(state.customersEnabled)modules.push("Customer Hours Module");if(state.appointmentsEnabled)modules.push("Appointments Module");if(state.weatherEnabled)modules.push("Weather Module");if(state.equipmentEnabled)modules.push("Equipment Module");return modules.join("; ")};
+
+showVersionDetail=function(){openModal(`<h3>Version Detail</h3><div class="version-detail-text"><b>Big Rig V6 — Equipment Playtest</b><br><br><b>Included Modules</b><br><span class="module-legend-line">${moduleIcon("core")}<span class="module-name module-core">Core</span></span><br><span class="module-legend-line">${moduleIcon("fuel")}<span class="module-name module-fuel">Fuel</span></span><br><span class="module-legend-line">${moduleIcon("dh")}<span class="module-name module-dh">Drop & Hooks</span></span><br><span class="module-legend-line">${moduleIcon("customers")}<span class="module-name module-customers">Customer Hours</span></span><br><span class="module-legend-line">${moduleIcon("appointments")}<span class="module-name module-appointments">Appointments</span></span><br><span class="module-legend-line">${moduleIcon("weather")}<span class="module-name module-weather">Weather</span></span><br><span class="module-legend-line">${moduleIcon("equipment")}<span class="module-name module-equipment">Equipment</span></span><br><br><b>V6 Equipment</b><br>Eight tractor models · five trailer configurations<br>Fixed truck and trailer dealerships in every region<br>REP eligibility and 5-hour Acquire/Trade actions<br>Maintenance and Compliance capacity · Inspect before driving<br>Tanker and Flatbed specialty markets · 24 cards each<br>Heavy freight requires a Heavy Duty Tractor<br>Electric tractors charge for 1 hour at Fuel services<br><br><b>Out of Compliance</b><br>Existing freight may be completed, but no new commitment may be picked up until corrected. DOT checks and relevant random events automatically fail while Out of Compliance.<br><br><b>Search Stability</b><br>Search selections now synchronize across regional and active specialty markets.</div><button class="primary" onclick="closeModal()">Close</button>`)};
+const showRulesBeforeV6=showRules;
+showRules=function(){showRulesBeforeV6();if(!state.equipmentEnabled)return;const modal=document.getElementById("modal"),heading=modal?.querySelector("h3"),close=modal?.querySelector("button.primary:last-child");if(heading)heading.textContent="Big Rig V6 — Rules";close?.insertAdjacentHTML("beforebegin",`<div class="small" style="line-height:1.55;border-top:1px solid #45515e;margin-top:12px;padding-top:8px"><p><b>Equipment:</b> Players begin with a Peterbilt 579, Utility Dry Van, and 3 Maintenance / 3 Compliance rating. Equipment and an active load commit capacity. REP unlocks equipment but is not spent.</p><p><b>Acquire/Trade:</b> Spend 5 hours at a marked dealership. A tractor may be traded during an active load if the replacement remains compatible and compliant. A trailer cannot be traded during an active load or contracted Drop & Hook movement.</p><p><b>Inspect:</b> Before the first Drive of each tour, spend 30 minutes to choose one rating to increase, or skip and choose one rating to decrease. Ratings range from 0–5. A 10-hour reset begins a new inspection opportunity.</p><p><b>Out of Compliance:</b> A player whose committed demand exceeds a rating may finish existing work and trade to correct the problem, but cannot pick up additional demand. DOT checks and relevant random events automatically fail.</p><p><b>Specialty Freight:</b> Acquiring a Tanker or Flatbed activates its shared 24-card market with three face-up loads. Only an owner with the matching trailer may book; Heavy loads additionally require a Heavy Duty Tractor.</p><p><b>Electric:</b> Charge at any Fuel location for 1 hour to restore maximum energy.</p></div>`)};
+render();
 </script>
 
 </body>
